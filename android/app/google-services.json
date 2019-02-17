@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "147686885014",
+    "firebase_url": "https://questionnaire-31.firebaseio.com",
+    "project_id": "questionnaire-31",
+    "storage_bucket": "questionnaire-31.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:147686885014:android:f9ab1b2353fa3e92",
+        "android_client_info": {
+          "package_name": "com.d.questionnaire"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "147686885014-9u2purosagkbabde0tmlncrdj8ddcei6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbwjrmIk_1CZqxatQfhjQv8a6yDpa_jo4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
