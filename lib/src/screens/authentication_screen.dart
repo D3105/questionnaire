@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:questionnaire/src/blocs/providers/authentication_provider.dart';
 import 'package:questionnaire/src/errors/authentication_errors.dart';
 import 'package:questionnaire/src/models/roles.dart';
-import 'package:questionnaire/src/widgets/snack_bar.dart';
+import 'package:questionnaire/src/routes.dart';
 
 class AuthenticationScreen extends StatelessWidget {
   @override
@@ -46,6 +46,7 @@ class AuthenticationScreen extends StatelessWidget {
     return StreamBuilder(
       builder: (context, AsyncSnapshot snapshot) {
         return TextField(
+          obscureText: fieldType.obscureText,
           decoration: InputDecoration(
             errorText: snapshot.error,
             labelText: fieldType.labelText,
@@ -130,7 +131,7 @@ class AuthenticationScreen extends StatelessWidget {
         bloc.add(subjectType, futureUser);
         final user = await futureUser;
         if (user != null) {
-          showSnackBar(context, 'Loged in as ${user.email}');
+          Navigator.push(context, Routes.questionnaireList(user));
         }
       };
     }
@@ -166,28 +167,35 @@ class TextFields {
   static const name = TextFields._(
     0,
     'Name',
+    false,
   );
   static const about = TextFields._(
     1,
     'About(optional)',
+    false,
   );
   static const email = TextFields._(
     2,
     'Email',
+    false,
   );
   static const password = TextFields._(
     3,
     'Password',
+    true,
   );
   static const retypePassword = TextFields._(
     4,
     'Retype Password',
+    true,
   );
 
-  const TextFields._(this.rawValue, this.labelText);
+
+  const TextFields._(this.rawValue, this.labelText, this.obscureText);
 
   final int rawValue;
   final String labelText;
+  final bool obscureText;
 }
 
 class SubmitButtons {
