@@ -29,6 +29,9 @@ Future<FirebaseUser> verify(
       case 'ERROR_WEAK_PASSWORD':
         message = 'Password is too weak.';
         break;
+      case 'ERROR_NETWORK_REQUEST_FAILED':
+        message = 'Network request failed.';
+        break;
       default:
         throw Exception('FirebaseAuthErrors enum exhausted: ${e.code}');
     }

@@ -14,7 +14,12 @@ class QuestionnaireListScreen extends StatelessWidget {
         title: Text('Questionnaires'),
       ),
       body: Text('...'),
-      drawer: Drawer(
+      drawer: buildDrawer(context),
+    );
+  }
+
+  Widget buildDrawer(BuildContext context) {
+    return Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
@@ -50,7 +55,6 @@ class QuestionnaireListScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }

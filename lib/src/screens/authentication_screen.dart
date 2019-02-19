@@ -10,40 +10,82 @@ class AuthenticationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = AuthenticationProvider.of(context);
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Container(
-          child: Column(
-            children: <Widget>[
-              SizedBox(height: 8),
-              textField(TextFields.name, AuthenticationSubjects.name, bloc),
-              SizedBox(height: 8),
-              roleDropDown(bloc),
-              SizedBox(height: 8),
-              textField(TextFields.about, AuthenticationSubjects.about, bloc),
-              SizedBox(height: 8),
-              textField(TextFields.email, AuthenticationSubjects.email, bloc),
-              SizedBox(height: 8),
-              textField(
-                  TextFields.password, AuthenticationSubjects.password, bloc),
-              SizedBox(height: 8),
-              textField(TextFields.retypePassword,
-                  AuthenticationSubjects.retypePassword, bloc),
-              SizedBox(height: 8),
-              submitButton(bloc, SubmitButtons.signIn,
-                  AuthenticationSubjects.signInIndicator),
-              submitButton(bloc, SubmitButtons.signUp,
-                  AuthenticationSubjects.signUpIndicator),
-            ],
+      body: Center(
+        child: SingleChildScrollView(
+          child: Container(
+            child: StreamBuilder(
+              stream: bloc.streamFor(AuthenticationSubjects.submitButtonAction),
+              initialData: SubmitButtons.signIn,
+              builder: (context, snapshot) {
+                List<Widget> children;
+                switch (snapshot.data) {
+                  case SubmitButtons.signIn:
+                    children = signInColumnChildren(bloc);
+                    break;
+                  case SubmitButtons.signUp:
+                    children = signUpColumnChildren(bloc);
+                    break;
+                  default:
+                    throw Exception('SubmitButtons enum exhausted.');
+                }
+
+                return Column(
+                  children: children,
+                );
+              },
+            ),
+            margin: EdgeInsets.all(31),
           ),
-          margin: EdgeInsets.all(31),
         ),
       ),
     );
   }
 
-  Widget textField(TextFields fieldType, AuthenticationSubjects subjectType,
-      AuthenticationBloc bloc) {
+  List<Widget> signInColumnChildren(AuthenticationBloc bloc) {
+    return <Widget>[
+      SizedBox(height: 8),
+      buildTextField(TextFields.email, AuthenticationSubjects.email, bloc),
+      SizedBox(height: 8),
+      buildTextField(
+          TextFields.password, AuthenticationSubjects.password, bloc),
+      SizedBox(height: 8),
+      buildSubmitButton(
+          bloc, SubmitButtons.signIn, AuthenticationSubjects.signInIndicator),
+      SizedBox(height: 16),
+      buildSubmitButton(
+          bloc, SubmitButtons.signUp, AuthenticationSubjects.signUpIndicator),
+    ];
+  }
+
+  List<Widget> signUpColumnChildren(AuthenticationBloc bloc) {
+    return <Widget>[
+      SizedBox(height: 8),
+      buildTextField(TextFields.name, AuthenticationSubjects.name, bloc),
+      SizedBox(height: 8),
+      buildRoleDropDown(bloc),
+      SizedBox(height: 8),
+      buildTextField(TextFields.about, AuthenticationSubjects.about, bloc),
+      SizedBox(height: 8),
+      buildTextField(TextFields.email, AuthenticationSubjects.email, bloc),
+      SizedBox(height: 8),
+      buildTextField(
+          TextFields.password, AuthenticationSubjects.password, bloc),
+      SizedBox(height: 8),
+      buildTextField(TextFields.retypePassword,
+          AuthenticationSubjects.retypePassword, bloc),
+      SizedBox(height: 8),
+      buildSubmitButton(
+          bloc, SubmitButtons.signUp, AuthenticationSubjects.signUpIndicator),
+      SizedBox(height: 16),
+      buildSubmitButton(
+          bloc, SubmitButtons.signIn, AuthenticationSubjects.signInIndicator),
+    ];
+  }
+
+  Widget buildTextField(TextFields fieldType,
+      AuthenticationSubjects subjectType, AuthenticationBloc bloc) {
     return StreamBuilder(
+      stream: bloc.streamFor(subjectType),
       builder: (context, AsyncSnapshot snapshot) {
         return TextField(
           obscureText: fieldType.obscureText,
@@ -59,13 +101,13 @@ class AuthenticationScreen extends StatelessWidget {
           },
         );
       },
-      stream: bloc.streamFor(subjectType),
     );
   }
 
-  Widget roleDropDown(AuthenticationBloc bloc) {
+  Widget buildRoleDropDown(AuthenticationBloc bloc) {
     return StreamBuilder(
-      builder: (context, AsyncSnapshot snapshot) {
+      stream: bloc.streamFor(AuthenticationSubjects.role),
+      builder: (context, snapshot) {
         return Container(
           child: DropdownButton<Roles>(
             items: Roles.values
@@ -76,7 +118,7 @@ class AuthenticationScreen extends StatelessWidget {
                       ),
                 )
                 .toList(),
-            value: snapshot.hasData ? snapshot.data : Roles.student,
+            value: snapshot.data,
             onChanged: (Roles role) {
               bloc.add(AuthenticationSubjects.role, role);
             },
@@ -95,38 +137,46 @@ class AuthenticationScreen extends StatelessWidget {
           ),
         );
       },
-      stream: bloc.streamFor(AuthenticationSubjects.role),
     );
   }
 
-  Widget submitButton(AuthenticationBloc bloc, SubmitButtons buttonType,
+  Widget buildSubmitButton(AuthenticationBloc bloc, SubmitButtons buttonType,
       AuthenticationSubjects subjectType) {
     return StreamBuilder(
       builder: (context, snapshot) {
         return RaisedButton(
           child: Column(
             children: [
-              Text(buttonType.toString()),
-              authenticationIndicator(context, bloc, buttonType),
+              Text(buttonType.description),
+              buildAuthenticationIndicator(context, bloc, buttonType),
             ],
           ),
           onPressed: onSubmitButtonPressed(
               snapshot, buttonType, context, bloc, subjectType),
         );
       },
-      stream: buttonType.allowedStream(bloc),
+      stream: buttonType.enabledStream(bloc),
     );
   }
 
   Function onSubmitButtonPressed(
       AsyncSnapshot snapshot,
-      SubmitButtons type,
+      SubmitButtons buttonType,
       BuildContext context,
       AuthenticationBloc bloc,
       AuthenticationSubjects subjectType) {
-    if (snapshot.hasData && snapshot.data) {
+    final isPrimaryButton =
+        (bloc.lastValue(AuthenticationSubjects.submitButtonAction) ==
+            buttonType);
+    if (!isPrimaryButton) {
+      return () =>
+          bloc.add(AuthenticationSubjects.submitButtonAction, buttonType);
+    }
+
+    if (snapshot.hasData &&
+        (snapshot.data is! bool || (snapshot.data is bool && snapshot.data))) {
       return () async {
-        final submitAction = type.submitAction(bloc);
+        final submitAction = buttonType.submitAction(bloc);
         final futureUser = verify(context, submitAction, subjectType, bloc);
         bloc.add(subjectType, futureUser);
         final user = await futureUser;
@@ -135,10 +185,11 @@ class AuthenticationScreen extends StatelessWidget {
         }
       };
     }
+
     return null;
   }
 
-  Widget authenticationIndicator(
+  Widget buildAuthenticationIndicator(
       BuildContext context, AuthenticationBloc bloc, SubmitButtons type) {
     return StreamBuilder(
       builder: (context, snapshot) {
@@ -190,7 +241,6 @@ class TextFields {
     true,
   );
 
-
   const TextFields._(this.rawValue, this.labelText, this.obscureText);
 
   final int rawValue;
@@ -199,24 +249,18 @@ class TextFields {
 }
 
 class SubmitButtons {
-  static const signIn = SubmitButtons._(0);
-  static const signUp = SubmitButtons._(1);
+  static const signIn = SubmitButtons._(0, 'Sign In');
+  static const signUp = SubmitButtons._(1, 'Sign Up');
 
   final int rawValue;
+  final String description;
 
-  const SubmitButtons._(this.rawValue);
+  const SubmitButtons._(this.rawValue, this.description);
 
   static const values = [signIn, signUp];
 
-  Stream allowedStream(AuthenticationBloc bloc) {
-    switch (this) {
-      case SubmitButtons.signIn:
-        return bloc.signInAllowed;
-      case SubmitButtons.signUp:
-        return bloc.signUpAllowed;
-      default:
-        throw Exception('SubmitButtons enum exhausted.');
-    }
+  Stream enabledStream(AuthenticationBloc bloc) {
+    return bloc.submitActionEnabled(this);
   }
 
   Stream indicatorStream(AuthenticationBloc bloc) {
@@ -236,18 +280,6 @@ class SubmitButtons {
         return bloc.signIn;
       case SubmitButtons.signUp:
         return bloc.signUp;
-      default:
-        throw Exception('SubmitButtons enum exhausted.');
-    }
-  }
-
-  @override
-  String toString() {
-    switch (this) {
-      case SubmitButtons.signIn:
-        return 'Sign In';
-      case SubmitButtons.signUp:
-        return 'Sign Up';
       default:
         throw Exception('SubmitButtons enum exhausted.');
     }

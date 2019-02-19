@@ -1,36 +1,67 @@
 import 'dart:async';
+import 'package:questionnaire/src/models/roles.dart';
+import 'package:questionnaire/src/screens/authentication_screen.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthenticationBloc {
+  static final shared = AuthenticationBloc._();
+
   final _subjects = Map<AuthenticationSubjects, BehaviorSubject>();
 
-  AuthenticationBloc() {
+  AuthenticationBloc._() {
     for (final type in AuthenticationSubjects.values) {
       _subjects[type] = BehaviorSubject();
 
       if (type == AuthenticationSubjects.about) {
         add(AuthenticationSubjects.about, '');
+      } else if (type == AuthenticationSubjects.submitButtonAction) {
+        add(AuthenticationSubjects.submitButtonAction, SubmitButtons.signIn);
+      } else if (type == AuthenticationSubjects.role) {
+        add(AuthenticationSubjects.role, Roles.student);
       }
     }
   }
 
+  dynamic lastValue(AuthenticationSubjects type) {
+    return _subjects[type].value;
+  }
+
   Future<FirebaseUser> signIn() async {
-    final email = _subjects[AuthenticationSubjects.email].value;
-    final password = _subjects[AuthenticationSubjects.password].value;
+    final email = lastValue(AuthenticationSubjects.email);
+    final password = lastValue(AuthenticationSubjects.password);
     return FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: password);
   }
 
   Future<FirebaseUser> signUp() {
-    final inputs = AuthenticationSubjects.values
-        .map((input) => _subjects[input].value)
-        .toList();
+    final inputs =
+        AuthenticationSubjects.values.map((input) => lastValue(input)).toList();
     return FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: inputs[3], password: inputs[4]);
   }
 
-  Observable<bool> get signInAllowed => Observable.combineLatest2(
+  Observable<bool> submitActionEnabled(SubmitButtons type) {
+    Observable<bool> allowed;
+    switch (type) {
+      case SubmitButtons.signIn:
+        allowed = _signInAllowed;
+        break;
+      case SubmitButtons.signUp:
+        allowed = _signUpAllowed;
+        break;
+      default:
+        throw Exception('SubmitButtons enum exhausted.');
+    }
+
+    return Observable.combineLatest2(allowed.startWith(false),
+        streamFor(AuthenticationSubjects.submitButtonAction),
+        (allowed, action) {
+      return action != type || allowed;
+    });
+  }
+
+  Observable<bool> get _signInAllowed => Observable.combineLatest2(
         streamFor(AuthenticationSubjects.email),
         streamFor(AuthenticationSubjects.password),
         (e, p) {
@@ -38,7 +69,7 @@ class AuthenticationBloc {
         },
       );
 
-  Observable<bool> get signUpAllowed => Observable.combineLatest5(
+  Observable<bool> get _signUpAllowed => Observable.combineLatest5(
           streamFor(AuthenticationSubjects.name),
           streamFor(AuthenticationSubjects.about),
           streamFor(AuthenticationSubjects.email),
@@ -129,8 +160,25 @@ class AuthenticationSubjects {
       error: '',
     ),
   );
+  static final submitButtonAction = AuthenticationSubjects._(
+    8,
+    _createTransformer(
+      filter: (_) => true,
+      error: '',
+    ),
+  );
 
-  static final values = [name, role, about, email, password, retypePassword, signInIndicator, signUpIndicator];
+  static final values = [
+    name,
+    role,
+    about,
+    email,
+    password,
+    retypePassword,
+    signInIndicator,
+    signUpIndicator,
+    submitButtonAction,
+  ];
 
   final int rawValue;
   final StreamTransformer transformer;
