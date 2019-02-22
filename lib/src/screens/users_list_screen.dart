@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/widgets/custom_drawer.dart';
 
-class QuestionnaireListScreen extends StatelessWidget {
+class UsersListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Questionnaires'),
+        title: Text('Users'),
       ),
-      body: Text('...'),
       drawer: CustomDrawer(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
-      ),
     );
   }
 }

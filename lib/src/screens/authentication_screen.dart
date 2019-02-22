@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/blocs/providers/authentication_provider.dart';
 import 'package:questionnaire/src/errors/authentication_errors.dart';
+import 'package:questionnaire/src/helper/routes.dart';
 import 'package:questionnaire/src/models/roles.dart';
-import 'package:questionnaire/src/routes.dart';
 
 class AuthenticationScreen extends StatelessWidget {
   @override
@@ -177,11 +177,12 @@ class AuthenticationScreen extends StatelessWidget {
         (snapshot.data is! bool || (snapshot.data is bool && snapshot.data))) {
       return () async {
         final submitAction = buttonType.submitAction(bloc);
-        final futureUser = verify(context, submitAction, subjectType, bloc);
-        bloc.add(subjectType, futureUser);
-        final user = await futureUser;
-        if (user != null) {
-          Navigator.push(context, Routes.questionnaireList(user));
+        final futureFirebaseUser =
+            verify(context, submitAction, subjectType, bloc);
+        bloc.add(subjectType, futureFirebaseUser);
+        final firebaseUser = await futureFirebaseUser;
+        if (firebaseUser != null) {
+          Navigator.pushReplacementNamed(context, Routes.home);
         }
       };
     }

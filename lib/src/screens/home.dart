@@ -1,20 +1,30 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:questionnaire/src/routes.dart';
+import 'package:questionnaire/src/blocs/providers/user_provider.dart';
+import 'package:questionnaire/src/helper/routes.dart';
+import 'package:questionnaire/src/models/user.dart';
 
 class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final futureUser = FirebaseAuth.instance.currentUser();
-    futureUser.then(
-      (user) {
-        if (user != null) {
-          Navigator.push(
+    final futureFirebaseUser = FirebaseAuth.instance.currentUser();
+    futureFirebaseUser.then(
+      (firebaseUser) async {
+        if (firebaseUser != null) {
+          final userDocument = await Firestore.instance
+              .document('/users/${firebaseUser.uid}')
+              .get();
+          final user = User.fromMap(userDocument.data);
+          final userBloc = UserProvider.of(context);
+          userBloc.updateUser(user);
+          userBloc.updatePhoto(photoUrl: user.photoUrl);
+          Navigator.pushReplacementNamed(
             context,
-            Routes.questionnaireList(user),
+            Routes.questionnaireList,
           );
         } else {
-          Navigator.pushNamed(
+          Navigator.pushReplacementNamed(
             context,
             Routes.authentication,
           );
@@ -32,7 +42,7 @@ class Home extends StatelessWidget {
               style: TextStyle(fontSize: 31),
             ),
             FutureBuilder(
-              future: futureUser,
+              future: futureFirebaseUser,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return CircularProgressIndicator();

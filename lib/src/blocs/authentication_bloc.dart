@@ -3,6 +3,7 @@ import 'package:questionnaire/src/models/roles.dart';
 import 'package:questionnaire/src/screens/authentication_screen.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthenticationBloc {
   static final shared = AuthenticationBloc._();
@@ -34,11 +35,25 @@ class AuthenticationBloc {
         .signInWithEmailAndPassword(email: email, password: password);
   }
 
-  Future<FirebaseUser> signUp() {
-    final inputs =
-        AuthenticationSubjects.values.map((input) => lastValue(input)).toList();
-    return FirebaseAuth.instance
-        .createUserWithEmailAndPassword(email: inputs[3], password: inputs[4]);
+  Future<FirebaseUser> signUp() async {
+    final name = lastValue(AuthenticationSubjects.name);
+    final role = lastValue(AuthenticationSubjects.role);
+    final about = lastValue(AuthenticationSubjects.about);
+    final email = lastValue(AuthenticationSubjects.email);
+    final password = lastValue(AuthenticationSubjects.password);
+
+    final user = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: password);
+    await Firestore.instance.collection('users').document(user.uid).setData({
+      'uid': user.uid,
+      'name': name,
+      'role': '$role',
+      'about': about,
+      'email': email,
+      'since': FieldValue.serverTimestamp(),
+    });
+
+    return user;
   }
 
   Observable<bool> submitActionEnabled(SubmitButtons type) {
