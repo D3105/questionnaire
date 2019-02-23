@@ -18,7 +18,6 @@ class Home extends StatelessWidget {
           final user = User.fromMap(userDocument.data);
           final userBloc = UserProvider.of(context);
           userBloc.updateUser(user);
-          userBloc.updatePhoto(photoUrl: user.photoUrl);
           Navigator.pushReplacementNamed(
             context,
             Routes.questionnaireList,

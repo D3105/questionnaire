@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:questionnaire/src/models/roles.dart';
 import 'package:questionnaire/src/screens/authentication_screen.dart';
 import 'package:rxdart/rxdart.dart';
@@ -51,6 +53,7 @@ class AuthenticationBloc {
       'about': about,
       'email': email,
       'since': FieldValue.serverTimestamp(),
+      'color': Random().nextInt(Colors.primaries.length),
     });
 
     return user;

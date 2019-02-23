@@ -3,9 +3,9 @@ import 'package:questionnaire/src/blocs/providers/user_provider.dart';
 import 'package:questionnaire/src/helper/routes.dart';
 import 'package:questionnaire/src/screens/questionnaire_list_screen.dart';
 import 'package:questionnaire/src/screens/users_list_screen.dart';
-import 'package:questionnaire/src/widgets/profile_photo.dart';
+import '../mixins/circular_profile_photo_builder.dart';
 
-class CustomDrawer extends StatelessWidget {
+class CustomDrawer extends StatelessWidget with CircularProfilePhotoBuilder {
   @override
   Widget build(BuildContext context) {
     final bloc = UserProvider.of(context);
@@ -48,21 +48,6 @@ class CustomDrawer extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.blue,
       ),
-    );
-  }
-
-  Widget buildProfilePhoto(UserBloc bloc) {
-    return StreamBuilder(
-      stream: bloc.profilePhoto,
-      builder: (context, AsyncSnapshot<ProfilePhoto> snapshot) {
-        if (!snapshot.hasData) {
-          return CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
-          );
-        }
-
-        return snapshot.data;
-      },
     );
   }
 

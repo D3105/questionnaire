@@ -6,6 +6,7 @@ class User {
   String email;
   String photoUrl;
   DateTime since;
+  int color;
 
   User.fromMap(Map<String, dynamic> data)
       : uid = data['uid'],
@@ -14,5 +15,6 @@ class User {
         about = data['about'],
         email = data['email'],
         photoUrl = data['photoUrl'],
-        since = data['since'];
+        since = data['since'],
+        color = data['color'];
 }

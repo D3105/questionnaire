@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:questionnaire/src/blocs/providers/user_provider.dart';
 import 'package:questionnaire/src/helper/routes.dart';
 import 'package:questionnaire/src/models/user.dart';
-import 'package:questionnaire/src/widgets/profile_photo.dart';
-import 'package:image_picker/image_picker.dart';
-import '../helper/firebase_storage.dart';
+import 'package:questionnaire/src/screens/photo_viewer_screen.dart';
+import 'package:intl/intl.dart';
+import '../mixins/circular_profile_photo_builder.dart';
 
-class ProfileScreen extends StatelessWidget {
-
+class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
   @override
   Widget build(BuildContext context) {
     final bloc = UserProvider.of(context);
@@ -43,9 +42,9 @@ class ProfileScreen extends StatelessWidget {
             children: <Widget>[
               GestureDetector(
                 onTap: () {
-                  onPhotoTap(bloc);
+                  onPhotoTap(bloc, context);
                 },
-                child: buildPhoto(bloc),
+                child: buildProfilePhoto(bloc),
               ),
               Container(
                 margin: EdgeInsets.all(16),
@@ -58,41 +57,29 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget buildPhoto(UserBloc bloc) {
-    return StreamBuilder<ProfilePhoto>(
-      stream: bloc.profilePhoto,
-      builder: (context, snapshot) {
-        if (snapshot.hasError || !snapshot.hasData) {
-          return CircularProgressIndicator();
-        }
-        return snapshot.data;
-      },
+  void onPhotoTap(UserBloc bloc, BuildContext context) async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          return PhotoViewerScreen(
+            url: bloc.lastUser.photoUrl,
+          );
+        },
+      ),
     );
   }
 
-  void onPhotoTap(UserBloc bloc) async {
-    final photo = await ImagePicker.pickImage(
-        source: ImageSource.camera, maxWidth: 200, maxHeight: 200);
-    if (photo == null) return;
-    bloc.pendingPhoto();
-    final photoUrl = await uploadFile(photo, bloc.lastUser.uid);
-    await Firestore.instance
-        .document('/users/${bloc.lastUser.uid}')
-        .updateData({'photoUrl': photoUrl});
-    bloc.updatePhoto(file: photo);
-  }
-
   Widget buildCard(User user) {
-    final regDay = user.since.day;
-    final regMonth = user.since.month;
-    final regYear = user.since.year;
+    final dateFormatter = DateFormat('dd.MM.yy H:m');
+    final sinceDate = dateFormatter.format(user.since);
     return Card(
       child: Center(
         child: Column(
           children: <Widget>[
             Text(user.name),
             Text(user.role),
-            Text('Since: $regDay.$regMonth.$regYear'),
+            Text('Since: $sinceDate'),
             user.about.isEmpty
                 ? Container(width: 0, height: 0)
                 : Text('About: ${user.about}')
