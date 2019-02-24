@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:questionnaire/src/blocs/providers/authentication_provider.dart';
 import 'package:questionnaire/src/blocs/providers/user_provider.dart';
 import 'package:questionnaire/src/helper/routes.dart';
-import 'package:questionnaire/src/screens/authentication_screen.dart';
 import 'package:questionnaire/src/screens/home.dart';
 import 'package:questionnaire/src/screens/profile_edit_screen.dart';
 import 'package:questionnaire/src/screens/questionnaire_list_screen.dart';
+import 'package:questionnaire/src/screens/sign_in_screen.dart';
+import 'package:questionnaire/src/screens/sign_up_screen.dart';
 import 'package:questionnaire/src/screens/users_list_screen.dart';
 
 class App extends StatelessWidget {
@@ -18,11 +18,6 @@ class App extends StatelessWidget {
           Routes.home: (context) {
             return Home();
           },
-          Routes.authentication: (context) {
-            return AuthenticationProvider(
-              child: AuthenticationScreen(),
-            );
-          },
           Routes.questionnaireList: (context) {
             return QuestionnaireListScreen();
           },
@@ -31,6 +26,12 @@ class App extends StatelessWidget {
           },
           Routes.profileEditScreen: (context) {
             return ProfileEditScreen();
+          },
+          Routes.signIn: (context) {
+            return SignInScreen();
+          },
+          Routes.signUp: (context) {
+            return SignUpScreen();
           },
         },
       ),

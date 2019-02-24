@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/blocs/providers/user_provider.dart';
-import 'package:questionnaire/src/models/roles.dart';
 import 'package:questionnaire/src/models/user.dart';
+import '../mixins/authentication_fields.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _ProfileEditScreenState();
 }
 
-class _ProfileEditScreenState extends State<ProfileEditScreen> {
+class _ProfileEditScreenState extends State with AuthenticationFields {
   var isNameValid = true;
   var isAboutValid = true;
 
@@ -42,12 +42,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        child: buildForm(context),
+        child: buildForm(),
       ),
     );
   }
 
-  Widget buildForm(BuildContext context) {
+  Widget buildForm() {
     if (role == null) {
       role = user.role;
     }
@@ -55,68 +55,31 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     return Container(
       child: Column(
         children: <Widget>[
-          buildNameTextField(),
+          buildNameTextField(
+            nameController,
+            isNameValid,
+            (isValid) {
+              isNameValid = isValid;
+            },
+          ),
           SizedBox(height: 16),
-          buildRoleDropDown(),
+          buildRoleDropDown(
+            role,
+            (newRole) {
+              role = newRole;
+            },
+          ),
           SizedBox(height: 16),
-          buildAboutTextField(),
+          buildAboutTextField(
+            aboutController,
+            isAboutValid,
+            (isValid) {
+              isAboutValid = isValid;
+            },
+          ),
         ],
       ),
       margin: EdgeInsets.all(16),
-    );
-  }
-
-  Widget buildNameTextField() {
-    return TextField(
-      controller: nameController,
-      decoration: InputDecoration(
-        labelText: 'Name',
-        errorText: isNameValid ? null : 'Name must contain from 5 to 31 chars.',
-      ),
-      onChanged: (name) {
-        setState(() {
-          isNameValid = (name.length >= 5 && name.length <= 31);
-        });
-      },
-    );
-  }
-
-  Widget buildAboutTextField() {
-    return TextField(
-      controller: aboutController,
-      decoration: InputDecoration(
-        labelText: 'About',
-        errorText: isAboutValid
-            ? null
-            : 'About must contain from 10 to 300 chars or be empty.',
-      ),
-      onChanged: (about) {
-        setState(() {
-          isAboutValid = (about.length == 0 ||
-              (about.length >= 10 && about.length <= 300));
-        });
-      },
-    );
-  }
-
-  Widget buildRoleDropDown() {
-    final items = Roles.values.map(
-      (role) {
-        return DropdownMenuItem(
-          child: Text(role.description),
-          value: role.description,
-        );
-      },
-    ).toList();
-    return DropdownButton<String>(
-      items: items,
-      value: role,
-      onChanged: (role) {
-        setState(() {
-          this.role = role;
-        });
-      },
-      isExpanded: true,
     );
   }
 

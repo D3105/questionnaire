@@ -6,7 +6,6 @@ import 'package:questionnaire/src/helper/routes.dart';
 import 'package:questionnaire/src/models/user.dart';
 import 'package:questionnaire/src/screens/photo_viewer_screen.dart';
 import 'package:intl/intl.dart';
-import 'package:questionnaire/src/screens/profile_edit_screen.dart';
 import '../mixins/circular_profile_photo_builder.dart';
 
 class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
@@ -118,7 +117,7 @@ class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
       onSelected: (_) {
         FirebaseAuth.instance.signOut();
         Navigator.pushNamedAndRemoveUntil(
-            context, Routes.authentication, (_) => false);
+            context, Routes.signIn, (_) => false);
       },
       itemBuilder: (BuildContext context) {
         return [

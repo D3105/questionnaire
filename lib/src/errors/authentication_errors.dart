@@ -1,14 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:questionnaire/src/blocs/providers/authentication_provider.dart';
-import 'package:questionnaire/src/widgets/snack_bar.dart';
 
-Future<FirebaseUser> verify(
-    BuildContext context,
-    Future<FirebaseUser> Function() submitAction,
-    AuthenticationSubjects subjectType,
-    AuthenticationBloc bloc) async {
+Future<FirebaseUser> verify(GlobalKey<ScaffoldState> scaffoldKey,
+    Future<FirebaseUser> Function() submitAction) async {
   try {
     return await submitAction();
   } on PlatformException catch (e) {
@@ -35,12 +30,19 @@ Future<FirebaseUser> verify(
       default:
         throw Exception('FirebaseAuthErrors enum exhausted: ${e.code}');
     }
-    showSnackBar(context, message);
+    showSnackBar(scaffoldKey, message);
   } catch (e) {
-    showSnackBar(context, 'Something wrong happen.');
+    showSnackBar(scaffoldKey, 'Something wrong happen.');
     print(e);
   }
 
-  bloc.add(subjectType, null);
   return null;
+}
+
+void showSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String message) {
+  scaffoldKey.currentState.showSnackBar(
+    SnackBar(
+      content: Text(message),
+    ),
+  );
 }

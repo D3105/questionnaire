@@ -26,14 +26,21 @@ class ProfilePhoto extends StatelessWidget {
         },
       );
     }
+    
     final abbreviation = user.name
         .split(' ')
         .take(2)
         .map((word) => word[0].toUpperCase())
         .join();
+
+    var color = Colors.primaries[user.color];
+    if (color == Colors.blue) {
+      color = Colors.green;
+    }
+
     return CircleAvatar(
       radius: radius,
-      backgroundColor: Colors.primaries[user.color],
+      backgroundColor: color,
       child: Text(
         abbreviation,
         style: TextStyle(

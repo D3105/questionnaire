@@ -25,7 +25,7 @@ class Home extends StatelessWidget {
         } else {
           Navigator.pushReplacementNamed(
             context,
-            Routes.authentication,
+            Routes.signIn,
           );
         }
       },
@@ -40,15 +40,7 @@ class Home extends StatelessWidget {
               'Questionnaire',
               style: TextStyle(fontSize: 31),
             ),
-            FutureBuilder(
-              future: futureFirebaseUser,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return CircularProgressIndicator();
-                }
-                return Container(width: 0, height: 0);
-              },
-            ),
+            CircularProgressIndicator(),
           ],
         ),
       ),
