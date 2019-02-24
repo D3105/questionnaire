@@ -1,28 +1,12 @@
 class Roles {
-  static const student = Roles(0);
-  static const teacher = Roles(1);
-  static const dean = Roles(2);
-  static const principal = Roles(3);
+  static const student = Roles('student');
+  static const teacher = Roles('teacher');
+  static const dean = Roles('dean');
+  static const principal = Roles('principal');
 
-  final int rawValue;
+  final String description;
 
-  const Roles(this.rawValue);
+  const Roles(this.description);
 
   static const values = [student, teacher, dean, principal];
-
-  @override
-  String toString() {
-    switch (this) {
-      case Roles.student:
-        return 'student';
-      case Roles.teacher:
-        return 'teacher';
-      case Roles.dean:
-        return 'dean';
-      case Roles.principal:
-        return 'principal';
-      default:
-        throw Exception('_Roles enum exhausted.');
-    }
-  }
 }

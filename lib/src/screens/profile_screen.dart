@@ -6,9 +6,14 @@ import 'package:questionnaire/src/helper/routes.dart';
 import 'package:questionnaire/src/models/user.dart';
 import 'package:questionnaire/src/screens/photo_viewer_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:questionnaire/src/screens/profile_edit_screen.dart';
 import '../mixins/circular_profile_photo_builder.dart';
 
 class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
+  final UserType userType;
+
+  ProfileScreen({Key key, this.userType}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = UserProvider.of(context);
@@ -16,15 +21,21 @@ class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile'),
-        actions: <Widget>[buildPopupMenuButton(context)],
+        actions: userType == UserType.primary
+            ? <Widget>[
+                buildEditAction(context),
+                buildPopupMenuButton(context),
+              ]
+            : null,
       ),
       body: buildBody(bloc),
     );
   }
 
   Widget buildBody(UserBloc bloc) {
-    final futureUser =
-        Firestore.instance.document('/users/${bloc.lastUser.uid}').get();
+    final futureUser = Firestore.instance
+        .document('/users/${bloc.lastUser(userType).uid}')
+        .get();
     return FutureBuilder(
       future: futureUser,
       builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
@@ -42,9 +53,9 @@ class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
             children: <Widget>[
               GestureDetector(
                 onTap: () {
-                  onPhotoTap(bloc, context);
+                  onPhotoTap(user, context);
                 },
-                child: buildProfilePhoto(bloc),
+                child: buildProfilePhoto(bloc.streamFor(userType)),
               ),
               Container(
                 margin: EdgeInsets.all(16),
@@ -57,13 +68,14 @@ class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
     );
   }
 
-  void onPhotoTap(UserBloc bloc, BuildContext context) async {
+  void onPhotoTap(User user, BuildContext context) async {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) {
           return PhotoViewerScreen(
-            url: bloc.lastUser.photoUrl,
+            url: user.photoUrl,
+            userType: userType,
           );
         },
       ),
@@ -86,6 +98,18 @@ class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildEditAction(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.edit),
+      onPressed: () {
+        Navigator.pushNamed(
+          context,
+          Routes.profileEditScreen,
+        );
+      },
     );
   }
 

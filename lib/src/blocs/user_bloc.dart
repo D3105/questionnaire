@@ -1,32 +1,47 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:questionnaire/src/models/user.dart';
 import 'package:rxdart/rxdart.dart';
 
 class UserBloc {
   static final shared = UserBloc._();
+  var _subjects = Map<UserType, BehaviorSubject<User>>();
 
-  UserBloc._();
-
-  final _userSubject = BehaviorSubject<User>();
-
-  Observable<User> get user => _userSubject.stream;
-
-  void updateUser(User user) {
-    _userSubject.sink.add(user);
+  UserBloc._() {
+    for (final type in UserType.values) {
+      _subjects[type] = BehaviorSubject();
+    }
   }
 
-  User get lastUser => _userSubject.value;
-
-  void pendingPhoto() {
-    _userSubject.sink.addError('pending photo');
+  Observable<User> streamFor(UserType type) {
+    return _subjects[type].stream;
   }
 
-  void deletePhoto() {
-    final user = lastUser;
+  void updateUser(UserType type, User user) async {
+    _subjects[type].sink.add(user);
+    await Firestore.instance
+        .document('/users/${user.uid}')
+        .updateData(user.toMap());
+  }
+
+  User lastUser(UserType type) {
+    return _subjects[type].value;
+  }
+
+  void pendingPhoto(UserType type) {
+    _subjects[type].sink.addError('pending photo');
+  }
+
+  void deletePhoto(UserType type) async {
+    final user = lastUser(type);
     user.photoUrl = null;
-    updateUser(user);
+    updateUser(type, user);
   }
 
   void dispose() {
-    _userSubject.close();
+    _subjects.values.forEach((subject) {
+      subject.close();
+    });
   }
 }
+
+enum UserType { primary, current }

@@ -110,14 +110,14 @@ class AuthenticationScreen extends StatelessWidget {
       builder: (context, snapshot) {
         return Container(
           child: DropdownButton<Roles>(
-            items: Roles.values
-                .map(
-                  (role) => DropdownMenuItem(
-                        child: Text(role.toString()),
-                        value: role,
-                      ),
-                )
-                .toList(),
+            items: Roles.values.map(
+              (role) {
+                return DropdownMenuItem(
+                  child: Text(role.description),
+                  value: role,
+                );
+              },
+            ).toList(),
             value: snapshot.data,
             onChanged: (Roles role) {
               bloc.add(AuthenticationSubjects.role, role);

@@ -49,7 +49,7 @@ class AuthenticationBloc {
     await Firestore.instance.collection('users').document(user.uid).setData({
       'uid': user.uid,
       'name': name,
-      'role': '$role',
+      'role': role.description,
       'about': about,
       'email': email,
       'since': FieldValue.serverTimestamp(),
@@ -140,7 +140,7 @@ class AuthenticationSubjects {
     _createTransformer(
       filter: (about) =>
           about.length == 0 || (about.length >= 10 && about.length <= 300),
-      error: 'About must contain from 10 to 300 chars.',
+      error: 'About must contain from 10 to 300 chars or be empty.',
     ),
   );
   static final email = AuthenticationSubjects._(

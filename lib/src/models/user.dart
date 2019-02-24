@@ -17,4 +17,26 @@ class User {
         photoUrl = data['photoUrl'],
         since = data['since'],
         color = data['color'];
+
+  Map<String, dynamic> toMap() {
+    return {
+      'uid': uid,
+      'name': name,
+      'role': role,
+      'about': about,
+      'email': email,
+      'photoUrl': photoUrl,
+      'since': since,
+      'color': color,
+    };
+  }
+
+  @override
+  operator ==(dynamic object) {
+    if (object.runtimeType != User) return false;
+    return uid == object.uid;
+  }
+
+  @override
+  int get hashCode => 31 + uid.hashCode;
 }

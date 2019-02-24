@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_view/photo_view.dart';
@@ -12,8 +11,9 @@ import 'package:flutter/services.dart';
 
 class PhotoViewerScreen extends StatefulWidget {
   final String url;
+  final UserType userType;
 
-  const PhotoViewerScreen({Key key, this.url}) : super(key: key);
+  const PhotoViewerScreen({Key key, this.url, this.userType}) : super(key: key);
 
   @override
   _PhotoViewerScreenState createState() => _PhotoViewerScreenState();
@@ -34,10 +34,10 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
   Widget build(BuildContext context) {
     final bloc = UserProvider.of(context);
     return StreamBuilder<User>(
-      stream: bloc.user,
+      stream: bloc.streamFor(widget.userType),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Center(child:CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
 
         return buildScreen(bloc);
@@ -52,16 +52,30 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
     List<_Action> actions;
 
     if (url != null) {
+      switch (widget.userType) {
+        case UserType.primary:
+          actions = _Action.values;
+          break;
+        case UserType.current:
+          actions = [_Action.share, _Action.download];
+          break;
+      }
       backgroundColor = Colors.black;
       appBarColor = Colors.black;
-      actions = _Action.values;
       photoView = PhotoView(
         imageProvider: CachedNetworkImageProvider(url),
       );
     } else {
+      switch (widget.userType) {
+        case UserType.primary:
+          actions = [_Action.library, _Action.camera];
+          break;
+        case UserType.current:
+          actions = [];
+          break;
+      }
       backgroundColor = Colors.white;
       appBarColor = Colors.blue;
-      actions = [_Action.library, _Action.camera];
       photoView = Center(
         child: Text(
           'No image yet.',
@@ -159,7 +173,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
           },
         );
       default:
-        throw Exception('Actions exhausted.');
+        throw Exception('_Action enum exhausted.');
     }
   }
 
@@ -178,7 +192,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                 ),
               ),
               onPressed: () {
-                bloc.deletePhoto();
+                bloc.deletePhoto(widget.userType);
                 setState(() {
                   url = null;
                 });
@@ -204,15 +218,12 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
       source: source,
     );
     if (photo == null) return;
-    bloc.pendingPhoto();
-    final uid = bloc.lastUser.uid;
+    bloc.pendingPhoto(widget.userType);
+    final uid = bloc.lastUser(widget.userType).uid;
     final photoUrl = await uploadFile(photo, uid);
-    await Firestore.instance
-        .document('/users/$uid')
-        .updateData({'photoUrl': photoUrl});
-    final user = bloc.lastUser;
+    final user = bloc.lastUser(widget.userType);
     user.photoUrl = photoUrl;
-    bloc.updateUser(user);
+    bloc.updateUser(widget.userType, user);
     setState(() {
       url = photoUrl;
     });

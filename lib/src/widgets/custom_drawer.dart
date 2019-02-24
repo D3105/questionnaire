@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/blocs/providers/user_provider.dart';
 import 'package:questionnaire/src/helper/routes.dart';
+import 'package:questionnaire/src/screens/profile_screen.dart';
 import 'package:questionnaire/src/screens/questionnaire_list_screen.dart';
 import 'package:questionnaire/src/screens/users_list_screen.dart';
 import '../mixins/circular_profile_photo_builder.dart';
@@ -28,16 +29,25 @@ class CustomDrawer extends StatelessWidget with CircularProfilePhotoBuilder {
       child: GestureDetector(
         onTap: () {
           Navigator.pop(context);
-          Navigator.pushNamed(context, Routes.profile);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return ProfileScreen(
+                  userType: UserType.primary,
+                );
+              },
+            ),
+          );
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            buildProfilePhoto(bloc),
+            buildProfilePhoto(bloc.streamFor(UserType.primary)),
             SizedBox(height: 16),
             Text(
-              bloc.lastUser.name,
+              bloc.lastUser(UserType.primary).name,
               style: TextStyle(
                 color: Colors.white,
               ),
