@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/helper/routes.dart';
-import 'package:questionnaire/src/screens/base_authentication_screen_state.dart';
+import 'package:questionnaire/src/screens/base/base_authentication_screen_state.dart';
 
 class SignInScreen extends StatefulWidget {
   @override

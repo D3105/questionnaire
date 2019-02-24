@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/blocs/providers/user_provider.dart';
 import 'package:questionnaire/src/models/user.dart';
+import 'package:questionnaire/src/screens/base/base_modal_screen_state.dart';
 import '../mixins/authentication_fields.dart';
 
 class ProfileEditScreen extends StatefulWidget {
@@ -8,7 +9,8 @@ class ProfileEditScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _ProfileEditScreenState();
 }
 
-class _ProfileEditScreenState extends State with AuthenticationFields {
+class _ProfileEditScreenState extends BaseModalScreenState
+    with AuthenticationFields {
   var isNameValid = true;
   var isAboutValid = true;
 
@@ -32,87 +34,56 @@ class _ProfileEditScreenState extends State with AuthenticationFields {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Profile Edit'),
-        leading: buildIconButton(context, _Action.close),
-        actions: <Widget>[
-          buildIconButton(context, _Action.save),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: buildForm(),
-      ),
-    );
-  }
-
-  Widget buildForm() {
+  Widget buildBody() {
     if (role == null) {
       role = user.role;
     }
-
-    return Container(
-      child: Column(
-        children: <Widget>[
-          buildNameTextField(
-            nameController,
-            isNameValid,
-            (isValid) {
-              isNameValid = isValid;
-            },
-          ),
-          SizedBox(height: 16),
-          buildRoleDropDown(
-            role,
-            (newRole) {
-              role = newRole;
-            },
-          ),
-          SizedBox(height: 16),
-          buildAboutTextField(
-            aboutController,
-            isAboutValid,
-            (isValid) {
-              isAboutValid = isValid;
-            },
-          ),
-        ],
+    
+    return SingleChildScrollView(
+      child: Container(
+        child: Column(
+          children: <Widget>[
+            buildNameTextField(
+              nameController,
+              isNameValid,
+              (isValid) {
+                isNameValid = isValid;
+              },
+            ),
+            SizedBox(height: 16),
+            buildRoleDropDown(
+              role,
+              (newRole) {
+                role = newRole;
+              },
+            ),
+            SizedBox(height: 16),
+            buildAboutTextField(
+              aboutController,
+              isAboutValid,
+              (isValid) {
+                isAboutValid = isValid;
+              },
+            ),
+          ],
+        ),
+        margin: EdgeInsets.all(16),
       ),
-      margin: EdgeInsets.all(16),
     );
   }
 
-  IconButton buildIconButton(BuildContext context, _Action action) {
-    switch (action) {
-      case _Action.close:
-        return IconButton(
-          icon: Icon(Icons.close),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        );
-      case _Action.save:
-        return IconButton(
-          icon: Icon(Icons.save),
-          onPressed: isNameValid && isAboutValid
-              ? () {
-                  onSaved();
-                }
-              : null,
-        );
-      default:
-        throw Exception('_Action enum exausted.');
-    }
-  }
-
-  void onSaved() {
+  @override
+  void onSavePressed() {
     user.name = nameController.text;
     user.role = role;
     user.about = aboutController.text;
     bloc.updateUser(UserType.primary, user);
     Navigator.pop(context);
   }
-}
 
-enum _Action { close, save }
+  @override
+  bool get isSaveEnabled => isNameValid && isAboutValid;
+
+  @override
+  String get title => 'Profile Edit';
+}

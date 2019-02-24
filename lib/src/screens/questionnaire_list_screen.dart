@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questionnaire/src/screens/questionnaire_edit_screen.dart';
 import 'package:questionnaire/src/widgets/custom_drawer.dart';
 
 class QuestionnaireListScreen extends StatelessWidget {
@@ -10,10 +11,23 @@ class QuestionnaireListScreen extends StatelessWidget {
       ),
       body: Text('...'),
       drawer: CustomDrawer(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
-      ),
+      floatingActionButton: buildFab(context),
+    );
+  }
+
+  Widget buildFab(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return QuestionnaireEditScreen();
+            },
+          ),
+        );
+      },
+      child: Icon(Icons.add),
     );
   }
 }
