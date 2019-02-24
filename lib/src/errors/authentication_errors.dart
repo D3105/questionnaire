@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 Future<FirebaseUser> verify(GlobalKey<ScaffoldState> scaffoldKey,
-    Future<FirebaseUser> Function() submitAction) async {
+    Future<FirebaseUser> Function() authenticate) async {
   try {
-    return await submitAction();
+    return await authenticate();
   } on PlatformException catch (e) {
     String message;
     switch (e.code) {
