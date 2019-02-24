@@ -20,8 +20,6 @@ class UsersListScreen extends StatelessWidget {
   }
 
   Widget buildUsersList(BuildContext context) {
-    final bloc = UserProvider.of(context);
-
     return StreamBuilder<QuerySnapshot>(
       stream: Firestore.instance.collection('users').snapshots(),
       builder: (context, snapshot) {
@@ -31,39 +29,44 @@ class UsersListScreen extends StatelessWidget {
           );
         }
 
-        return ListView(
-          children: snapshot.data.documents.map(
-            (document) {
-              final user = User.fromMap(document.data);
-              return ListTile(
-                title: Text(user.name),
-                subtitle: Text(user.role),
-                leading: ProfilePhoto(
-                  user: user,
-                  radius: 25,
-                ),
-                onTap: () {
-                  bloc.updateUser(UserType.current, user);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        final isPrimaryUser =
-                            (user == bloc.lastUser(UserType.primary));
-                        return ProfileScreen(
-                          userType: isPrimaryUser
-                              ? UserType.primary
-                              : UserType.current,
-                        );
-                      },
-                    ),
-                  );
-                },
-              );
-            },
-          ).toList(),
+        return ListView.builder(
+          itemCount: snapshot.data.documents.length,
+          itemBuilder: (context, index) {
+            final user = User.fromMap(snapshot.data.documents[index].data);
+            return buildUserTile(context, user);
+          },
         );
       },
+    );
+  }
+
+  Widget buildUserTile(BuildContext context, User user) {
+    return ListTile(
+      title: Text(user.name),
+      subtitle: Text(user.role),
+      leading: ProfilePhoto(
+        user: user,
+        radius: 25,
+      ),
+      onTap: () {
+        onUserTap(context, user);
+      },
+    );
+  }
+
+  void onUserTap(BuildContext context, User user) {
+    final bloc = UserProvider.of(context);
+    bloc.updateUser(UserType.current, user);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          final isPrimaryUser = (user == bloc.lastUser(UserType.primary));
+          return ProfileScreen(
+            userType: isPrimaryUser ? UserType.primary : UserType.current,
+          );
+        },
+      ),
     );
   }
 }
