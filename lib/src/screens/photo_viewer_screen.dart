@@ -186,7 +186,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
           actions: <Widget>[
             FlatButton(
               child: Text(
-                'Delete',
+                'DELETE',
                 style: TextStyle(
                   color: Colors.red,
                 ),
@@ -201,7 +201,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
             ),
             FlatButton(
               child: Text(
-                'Cancel',
+                'CANCEL',
               ),
               onPressed: () {
                 Navigator.pop(context);

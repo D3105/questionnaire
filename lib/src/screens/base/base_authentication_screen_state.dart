@@ -39,6 +39,8 @@ abstract class BaseAuthenticationScreenState extends State
   Widget buildPrimaryButton(
       BuildContext context, String title, bool isEnabled) {
     return RaisedButton(
+      color: Colors.yellow,
+      textColor: Colors.blue,
       child: isProgressIndicatorOn
           ? Container(
               child: CircularProgressIndicator(),
@@ -62,7 +64,11 @@ abstract class BaseAuthenticationScreenState extends State
 
   Widget buildSecondaryButton(
       BuildContext context, String title, String route) {
-    return RaisedButton(
+    return OutlineButton(
+      highlightColor: Colors.yellow,
+      highlightedBorderColor: Colors.yellow,
+      borderSide: BorderSide(color: Colors.yellow, width: 2),
+      textColor: Colors.blue,
       child: Text(title),
       onPressed: () {
         Navigator.pushReplacementNamed(context, route);

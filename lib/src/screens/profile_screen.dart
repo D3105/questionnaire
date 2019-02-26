@@ -82,7 +82,7 @@ class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
   }
 
   Widget buildCard(User user) {
-    final dateFormatter = DateFormat('dd.MM.yy H:m');
+    final dateFormatter = DateFormat('dd.MM.yy HH:mm');
     final sinceDate = dateFormatter.format(user.since);
     return Card(
       child: Center(
