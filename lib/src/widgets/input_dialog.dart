@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
-Future<String> showInputDialog(BuildContext context, String title,
+Future<String> showInputDialog(
+    BuildContext context, String title, List<String> existingValues,
     [String initialValue = '']) {
   return showDialog<String>(
     context: context,
     builder: (context) {
-      var isInputValid = true;
+      var isInputNotEmpty = true;
+      var isInputUnique = true;
       final controller = TextEditingController.fromValue(
         TextEditingValue(
           text: initialValue,
@@ -17,24 +19,34 @@ Future<String> showInputDialog(BuildContext context, String title,
 
       return StatefulBuilder(
         builder: (context, setState) {
+          String error;
+          if (!isInputNotEmpty) {
+            error = 'Field must not be empty.';
+          } else if (!isInputUnique) {
+            error = 'Item must be unique.';
+          }
+
           return AlertDialog(
             title: Text(title),
             content: TextField(
               controller: controller,
               autofocus: true,
               decoration: InputDecoration(
-                errorText: isInputValid ? null : 'Field must not be empty.',
+                errorText: error,
               ),
               onChanged: (input) {
                 setState(() {
-                  isInputValid = input.isNotEmpty;
+                  isInputNotEmpty = input.isNotEmpty;
+                  isInputUnique = !existingValues.contains(input);
                 });
               },
             ),
             actions: <Widget>[
               FlatButton(
                 child: Text(initialValue.isEmpty ? 'ADD' : 'SAVE'),
-                onPressed: isInputValid && controller.text.isNotEmpty
+                onPressed: isInputNotEmpty &&
+                        isInputUnique &&
+                        controller.text.isNotEmpty
                     ? () {
                         Navigator.pop(context, controller.text);
                       }

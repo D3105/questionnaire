@@ -68,8 +68,8 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
               icon: Icon(Icons.add),
               label: Text('Add'),
               onPressed: () async {
-                final input =
-                    await showInputDialog(context, 'Add ${type.name}');
+                final input = await showInputDialog(context, 'Add ${type.name}',
+                    panelsData.map((panelData) => panelData.title).toList());
                 if (input == null) return;
                 setState(() {
                   panelsData.forEach((panelData) => panelData.isExpanded =
@@ -106,7 +106,13 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
       case _PanelAction.add:
         text = 'ADD';
         onPressed = () async {
-          final alternative = await showInputDialog(context, 'Add Alternative');
+          final alternative = await showInputDialog(
+            context,
+            'Add Alternative',
+            panelData.alternatives
+                .map((alternative) => alternative.name)
+                .toList(),
+          );
           if (alternative == null) return;
           setState(() {
             panelData.alternatives.add(_Alternative(alternative));
@@ -117,7 +123,13 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
         text = 'EDIT';
         onPressed = () async {
           final title = await showInputDialog(
-              context, 'Edit ${type.name}', panelData.title);
+            context,
+            'Edit ${type.name}',
+            panelsData
+                .map((panelData) => panelData.title)
+                .toList(),
+            panelData.title,
+          );
           if (title == null) return;
           setState(() {
             panelData.title = title;
@@ -363,6 +375,10 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
 
   @override
   void onSavePressed() {
+    final name = nameController.text;
+    final about = aboutController.text;
+    // final questions = questionPanelsData
+    //     .map((panelData) => {panelData.title: panelData.alternatives}).toList().expand((list) => list).toList();
     Navigator.pop(context);
   }
 
