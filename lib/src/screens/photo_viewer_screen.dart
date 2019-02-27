@@ -84,33 +84,40 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
     }
 
     final scaffoldKey = GlobalKey<ScaffoldState>();
+    final appBarKey = GlobalKey();
 
     final body = GestureDetector(
       child: photoView,
       onTap: () {
-        setState(() {
+        appBarKey.currentState.setState(() {
           isAppBarVisible = !isAppBarVisible;
         });
       },
     );
 
-    var children = <Widget>[body];
+    final appBar = StatefulBuilder(
+      key: appBarKey,
+      builder: (context, setState) {
+        if (isAppBarVisible) {
+          final iconButtons = actions
+              .map((action) =>
+                  buildIconButton(action, context, scaffoldKey, bloc))
+              .toList();
+          return buildAppBar(context, iconButtons, appBarColor);
+        }
 
-    if (isAppBarVisible) {
-      SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-      final iconButtons = actions
-          .map((action) => buildIconButton(action, context, scaffoldKey, bloc))
-          .toList();
-      children.add(buildAppBar(context, iconButtons, appBarColor));
-    } else {
-      SystemChrome.setEnabledSystemUIOverlays([]);
-    }
+        return Container(height: 0, width: 0);
+      },
+    );
 
     return Scaffold(
       backgroundColor: backgroundColor,
       key: scaffoldKey,
       body: Stack(
-        children: children,
+        children: <Widget>[
+          body,
+          appBar,
+        ],
       ),
     );
   }
