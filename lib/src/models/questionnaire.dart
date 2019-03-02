@@ -1,34 +1,29 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:questionnaire/src/models/entity.dart';
 
-class User extends Entity {
+class Questionnaire extends Entity {
   String name;
-  String role;
   String about;
-  String email;
   String photoUrl;
   DateTime since;
-  int color;
+  DocumentReference creator;
 
-  User.fromMap(Map<String, dynamic> data)
+  Questionnaire.fromMap(Map<String, dynamic> data)
       : name = data['name'],
-        role = data['role'],
         about = data['about'],
-        email = data['email'],
         photoUrl = data['photoUrl'],
         since = data['since'],
-        color = data['color'],
+        creator = data['creator'],
         super(uid: data['uid']);
 
   Map<String, dynamic> toMap() {
     return {
       'uid': uid,
       'name': name,
-      'role': role,
       'about': about,
-      'email': email,
       'photoUrl': photoUrl,
       'since': since,
-      'color': color,
+      'creator': creator,
     };
   }
 }

@@ -2,18 +2,21 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:questionnaire/src/blocs/providers/questionnaire_provider.dart';
 import 'package:questionnaire/src/blocs/providers/user_provider.dart';
+import 'package:questionnaire/src/helper/cache.dart';
 import 'package:questionnaire/src/helper/firebase_storage.dart';
-import 'package:questionnaire/src/models/user.dart';
+import 'package:questionnaire/src/models/entity.dart';
 import 'package:share/share.dart';
 import 'package:image_downloader/image_downloader.dart';
-import 'package:flutter/services.dart';
 
 class PhotoViewerScreen extends StatefulWidget {
   final String url;
   final UserType userType;
+  final PhotoType photoType;
 
-  const PhotoViewerScreen({Key key, this.url, this.userType}) : super(key: key);
+  const PhotoViewerScreen({Key key, this.url, this.userType, this.photoType})
+      : super(key: key);
 
   @override
   _PhotoViewerScreenState createState() => _PhotoViewerScreenState();
@@ -22,6 +25,9 @@ class PhotoViewerScreen extends StatefulWidget {
 class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
   var isAppBarVisible = true;
   String url;
+
+  UserBloc userBloc;
+  QuestionnaireBloc questionnaireBloc;
 
   @override
   void initState() {
@@ -32,20 +38,26 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = UserProvider.of(context);
-    return StreamBuilder<User>(
-      stream: bloc.streamFor(widget.userType),
+    if (widget.photoType == PhotoType.userAvatar) {
+      userBloc = UserProvider.of(context);
+    } else {
+      questionnaireBloc = QuestionnaireProvider.of(context);
+    }
+
+    return StreamBuilder<Entity>(
+      stream: userBloc?.streamFor(widget.userType) ??
+          questionnaireBloc.questionnaire,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
         }
 
-        return buildScreen(bloc);
+        return buildScreen();
       },
     );
   }
 
-  Widget buildScreen(UserBloc bloc) {
+  Widget buildScreen() {
     Color backgroundColor;
     Color appBarColor;
     Widget photoView;
@@ -63,6 +75,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
       backgroundColor = Colors.black;
       appBarColor = Colors.black;
       photoView = PhotoView(
+        loadingChild: Center(child:CircularProgressIndicator()),
         imageProvider: CachedNetworkImageProvider(url),
       );
     } else {
@@ -100,8 +113,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
       builder: (context, setState) {
         if (isAppBarVisible) {
           final iconButtons = actions
-              .map((action) =>
-                  buildIconButton(action, context, scaffoldKey, bloc))
+              .map((action) => buildIconButton(action, context, scaffoldKey))
               .toList();
           return buildAppBar(context, iconButtons, appBarColor);
         }
@@ -136,20 +148,20 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
   }
 
   IconButton buildIconButton(_Action action, BuildContext context,
-      GlobalKey<ScaffoldState> scaffoldKey, UserBloc bloc) {
+      GlobalKey<ScaffoldState> scaffoldKey) {
     switch (action) {
       case _Action.library:
         return IconButton(
           icon: Icon(Icons.photo_library),
           onPressed: () {
-            pickPhoto(bloc, ImageSource.gallery);
+            pickPhoto(ImageSource.gallery);
           },
         );
       case _Action.camera:
         return IconButton(
           icon: Icon(Icons.photo_camera),
           onPressed: () {
-            pickPhoto(bloc, ImageSource.camera);
+            pickPhoto(ImageSource.camera);
           },
         );
       case _Action.share:
@@ -176,7 +188,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
         return IconButton(
           icon: Icon(Icons.delete),
           onPressed: () {
-            showDeleteDialog(bloc);
+            showDeleteDialog();
           },
         );
       default:
@@ -184,7 +196,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
     }
   }
 
-  void showDeleteDialog(UserBloc bloc) {
+  void showDeleteDialog() {
     showDialog(
       context: context,
       builder: (context) {
@@ -199,7 +211,10 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                 ),
               ),
               onPressed: () {
-                bloc.deletePhoto(widget.userType);
+                clearPhotoCache();
+
+                userBloc?.deletePhoto(widget.userType) ??
+                    questionnaireBloc.deletePhoto();
                 setState(() {
                   url = null;
                 });
@@ -220,17 +235,25 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
     );
   }
 
-  Future pickPhoto(UserBloc bloc, ImageSource source) async {
-    final photo = await ImagePicker.pickImage(
-      source: source,
-    );
+  Future pickPhoto(ImageSource source) async {
+    final photo = await ImagePicker.pickImage(source: source);
     if (photo == null) return;
-    bloc.pendingPhoto(widget.userType);
-    final uid = bloc.lastUser(widget.userType).uid;
-    final photoUrl = await uploadFile(photo, uid);
-    final user = bloc.lastUser(widget.userType);
-    user.photoUrl = photoUrl;
-    bloc.updateUser(widget.userType, user);
+
+    String photoUrl;
+    if (widget.photoType == PhotoType.userAvatar) {
+      userBloc.pendingPhoto(widget.userType);
+      final user = userBloc.lastUser(widget.userType);
+      photoUrl = await uploadFile(photo, user.uid);
+      user.photoUrl = photoUrl;
+      userBloc.updateUser(widget.userType, user);
+    } else {
+      questionnaireBloc.pendingPhoto();
+      final questionnaire = questionnaireBloc.last;
+      photoUrl = await uploadFile(photo, questionnaire.uid);
+      questionnaire.photoUrl = photoUrl;
+      questionnaireBloc.update(questionnaire);
+    }
+
     setState(() {
       url = photoUrl;
     });
@@ -238,3 +261,5 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
 }
 
 enum _Action { library, camera, share, download, delete }
+
+enum PhotoType { userAvatar, questionnairePicture }

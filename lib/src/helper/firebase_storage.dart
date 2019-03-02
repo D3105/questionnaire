@@ -8,3 +8,7 @@ Future<String> uploadFile(File file, String name) async {
   final url = await snapshot.ref.getDownloadURL();
   return url.toString();
 }
+
+void deleteFile(String name) {
+  FirebaseStorage.instance.ref().child(name).delete();
+}

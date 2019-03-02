@@ -39,9 +39,7 @@ class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
       future: futureUser,
       builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (!snapshot.hasData) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
+          return Center(child: CircularProgressIndicator());
         }
 
         final user = User.fromMap(snapshot.data.data);
@@ -75,6 +73,7 @@ class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
           return PhotoViewerScreen(
             url: user.photoUrl,
             userType: userType,
+            photoType: PhotoType.userAvatar,
           );
         },
       ),
@@ -116,8 +115,7 @@ class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
     return PopupMenuButton(
       onSelected: (_) {
         FirebaseAuth.instance.signOut();
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.signIn, (_) => false);
+        Navigator.pushNamedAndRemoveUntil(context, Routes.signIn, (_) => false);
       },
       itemBuilder: (BuildContext context) {
         return [

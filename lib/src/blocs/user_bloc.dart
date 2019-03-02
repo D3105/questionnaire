@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:questionnaire/src/helper/firebase_storage.dart';
 import 'package:questionnaire/src/models/user.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -27,14 +28,15 @@ class UserBloc {
     return _subjects[type].value;
   }
 
-  void pendingPhoto(UserType type) {
+  pendingPhoto(UserType type) {
     _subjects[type].sink.addError('pending photo');
   }
 
-  void deletePhoto(UserType type) async {
+  deletePhoto(UserType type) async {
     final user = lastUser(type);
     user.photoUrl = null;
     updateUser(type, user);
+    deleteFile(user.uid);
   }
 
   void dispose() {

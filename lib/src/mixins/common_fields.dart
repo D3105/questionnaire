@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/models/roles.dart';
 
-mixin AuthenticationFields on State {
+mixin CommonFields on State {
   Widget buildNameTextField(
       TextEditingController controller, bool isValid, Function(bool) validate) {
     return TextField(

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/models/user.dart';
+import 'package:questionnaire/src/widgets/compressed_image.dart';
 
 class ProfilePhoto extends StatelessWidget {
   final User user;
@@ -12,21 +13,23 @@ class ProfilePhoto extends StatelessWidget {
   Widget build(BuildContext context) {
     if (user.photoUrl != null) {
       return CachedNetworkImage(
-        height: radius * 2,
-        width: radius * 2,
         imageUrl: user.photoUrl,
         errorWidget: (context, url, e) => Icon(Icons.error),
         placeholder: (context, url) => CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation(Colors.yellow),
             ),
         imageBuilder: (context, imageProvider) {
-          return CircleAvatar(
-            backgroundImage: imageProvider,
+          return Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(radius)),
+            child: CompressedImage(
+              quality: 25,
+              imageProvider: imageProvider,
+            ),
           );
         },
       );
     }
-    
+
     final abbreviation = user.name
         .split(' ')
         .take(2)

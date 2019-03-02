@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:questionnaire/src/blocs/providers/user_provider.dart';
 import 'package:questionnaire/src/models/user.dart';
 import 'package:questionnaire/src/screens/base/base_modal_screen_state.dart';
-import '../mixins/authentication_fields.dart';
-
+import '../mixins/common_fields.dart';
 class ProfileEditScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _ProfileEditScreenState();
 }
 
 class _ProfileEditScreenState extends BaseModalScreenState
-    with AuthenticationFields {
+    with CommonFields {
   var isNameValid = true;
   var isAboutValid = true;
 

@@ -1,9 +1,13 @@
+import 'dart:io';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:questionnaire/src/helper/focus.dart';
+import 'package:questionnaire/src/helper/position.dart';
 import 'package:questionnaire/src/screens/base/base_modal_screen_state.dart';
+import 'package:questionnaire/src/widgets/compressed_image.dart';
 import 'package:questionnaire/src/widgets/input_dialog.dart';
-import '../mixins/authentication_fields.dart';
+import '../mixins/common_fields.dart';
 
 class QuestionnaireEditScreen extends StatefulWidget {
   @override
@@ -12,9 +16,16 @@ class QuestionnaireEditScreen extends StatefulWidget {
 }
 
 class _QuestionnaireEditScreenState extends BaseModalScreenState
-    with AuthenticationFields {
+    with CommonFields {
   var questionPanelsData = <_PanelData>[];
   var resultPanelsData = <_PanelData>[];
+
+  final addImageButtonKey = GlobalKey();
+
+  Future<CompressedImage> futureImage;
+
+  File previousImageFile;
+  ImageSource previousImageSource;
 
   var isNameValid = true;
   var isAboutValid = true;
@@ -43,6 +54,8 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
                 isAboutValid = isValid;
               },
             ),
+            buildImageTitle(),
+            buildImageView(),
             buildPanelListTitle(questionPanelsData, _PanelType.question),
             buildPanelList(questionPanelsData, _PanelType.question),
             buildPanelListTitle(resultPanelsData, _PanelType.result),
@@ -54,6 +67,144 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
     );
   }
 
+  Widget buildImageTitle() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 21),
+      child: Stack(
+        overflow: Overflow.visible,
+        alignment: AlignmentDirectional.center,
+        children: <Widget>[
+          Positioned(
+            child: buildAddButton(
+              onImageAddButtonPressed,
+              isImageButton: true,
+            ),
+            right: 0,
+          ),
+          Text(
+            'Image',
+            style: TextStyle(fontSize: 18),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void Function() onPanelAddButtonPressed(
+      List<_PanelData> panelsData, _PanelType type) {
+    return () async {
+      final input = await showInputDialog(context, 'Add ${type.name}',
+          panelsData.map((panelData) => panelData.title).toList());
+      if (input == null) return;
+      setState(() {
+        panelsData.forEach((panelData) =>
+            panelData.isExpanded = false); //temporarily fixing bug #13780
+        panelsData.add(_PanelData(input, type));
+      });
+    };
+  }
+
+  void onImageAddButtonPressed() async {
+    final imageSource = await pickImageSource();
+
+    if (imageSource == null) return;
+
+    setState(() {
+      futureImage = pickImage(imageSource);
+    });
+  }
+
+  Future<ImageSource> pickImageSource() {
+    return showMenu<ImageSource>(
+      context: context,
+      position: getPosition(addImageButtonKey),
+      items: [
+        PopupMenuItem(
+          value: ImageSource.gallery,
+          child: ListTile(
+            leading: Icon(Icons.photo_library),
+            title: Text('Gallery'),
+          ),
+        ),
+        PopupMenuItem(
+          value: ImageSource.camera,
+          child: ListTile(
+            leading: Icon(Icons.photo_camera),
+            title: Text('Camera'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void disposeCameraImage() {
+    if (previousImageSource == ImageSource.camera) {
+      previousImageFile?.delete();
+    }
+  }
+
+  Future<CompressedImage> pickImage(ImageSource source) async {
+    var imageFile = await ImagePicker.pickImage(source: source);
+
+    if (imageFile != null) {
+      disposeCameraImage();
+      previousImageFile = imageFile;
+      previousImageSource = source;
+    } else {
+      imageFile = previousImageFile;
+    }
+
+    return CompressedImage(
+      file: imageFile,
+      quality: 25,
+    );
+  }
+
+  Widget buildAddButton(void Function() onPressed,
+      {bool isImageButton = false}) {
+    return RaisedButton.icon(
+      key: isImageButton ? addImageButtonKey : null,
+      color: Colors.blue,
+      textColor: Colors.white,
+      icon: Icon(Icons.add),
+      label: Text('Add'),
+      onPressed: () {
+        clearFocus(context);
+        onPressed();
+      },
+    );
+  }
+
+  Widget buildImageView() {
+    return FutureBuilder<CompressedImage>(
+      future: futureImage,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.data == null) {
+          return Center(
+            child: buildPanelBodyPlaceholder('Image will appear here.'),
+          );
+        }
+
+        return Center(
+          child: Card(
+            elevation: 5,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Container(
+                child: snapshot.data,
+                height: 100,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget buildPanelListTitle(List<_PanelData> panelsData, _PanelType type) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 8, vertical: 21),
@@ -62,21 +213,8 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
         alignment: AlignmentDirectional.center,
         children: <Widget>[
           Positioned(
-            child: RaisedButton.icon(
-              color: Colors.blue,
-              textColor: Colors.white,
-              icon: Icon(Icons.add),
-              label: Text('Add'),
-              onPressed: () async {
-                final input = await showInputDialog(context, 'Add ${type.name}',
-                    panelsData.map((panelData) => panelData.title).toList());
-                if (input == null) return;
-                setState(() {
-                  panelsData.forEach((panelData) => panelData.isExpanded =
-                      false); //temporarily fixing bug #13780
-                  panelsData.add(_PanelData(input, type));
-                });
-              },
+            child: buildAddButton(
+              onPanelAddButtonPressed(panelsData, type),
             ),
             right: 0,
           ),
@@ -125,9 +263,7 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
           final title = await showInputDialog(
             context,
             'Edit ${type.name}',
-            panelsData
-                .map((panelData) => panelData.title)
-                .toList(),
+            panelsData.map((panelData) => panelData.title).toList(),
             panelData.title,
           );
           if (title == null) return;
@@ -152,7 +288,10 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
         text,
         style: TextStyle(color: color),
       ),
-      onPressed: onPressed,
+      onPressed: () {
+        clearFocus(context);
+        onPressed();
+      },
     );
   }
 
@@ -384,6 +523,13 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
 
   @override
   String get title => 'Add Questionnaire';
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    disposeCameraImage();
+  }
 }
 
 class _PanelData {

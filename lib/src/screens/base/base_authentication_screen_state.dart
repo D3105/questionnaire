@@ -2,10 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/errors/authentication_errors.dart';
 import 'package:questionnaire/src/helper/routes.dart';
-import '../../mixins/authentication_fields.dart';
+import '../../mixins/common_fields.dart';
 
 abstract class BaseAuthenticationScreenState extends State
-    with AuthenticationFields {
+    with CommonFields {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   var isProgressIndicatorOn = false;
