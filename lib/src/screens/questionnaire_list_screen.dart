@@ -11,7 +11,7 @@ class QuestionnaireListScreen extends StatelessWidget {
         title: Text('Questionnaires'),
       ),
       body: Center(
-        child: ExifTransform(child:Image.asset('images/f1.jpg'), exifOrientation: 7,),
+        child: ExifTransform(child:Image.asset('images/f1.jpg'), exifOrientation: 6,),
       ),
       drawer: CustomDrawer(),
       floatingActionButton: buildFab(context),
