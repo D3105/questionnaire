@@ -12,7 +12,6 @@ class Home extends StatelessWidget {
     futureFirebaseUser.then(
       (firebaseUser) async {
         if (firebaseUser != null) {
-          await Firestore.instance.settings(timestampsInSnapshotsEnabled: true);
           final userDocument = await Firestore.instance
               .document('/users/${firebaseUser.uid}')
               .get();

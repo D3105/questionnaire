@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:questionnaire/src/models/roles.dart';
 
 mixin CommonFields on State {
+  String getTrimmedText(TextEditingController controller) {
+    return _trim(controller.text);
+  }
+
   Widget buildNameTextField(
       TextEditingController controller, bool isValid, Function(bool) validate) {
     return TextField(
@@ -11,8 +15,11 @@ mixin CommonFields on State {
         errorText: isValid ? null : 'Name must contain from 5 to 31 chars.',
       ),
       onChanged: (name) {
+        final trimmed = _trim(name);
         setState(() {
-          validate(name.length >= 5 && name.length <= 31);
+          validate(
+            _checkLength(text: trimmed, min: 5, max: 31),
+          );
         });
       },
     );
@@ -30,9 +37,11 @@ mixin CommonFields on State {
             : 'About must contain from 10 to 300 chars or be empty.',
       ),
       onChanged: (about) {
+        final trimmed = _trim(about);
         setState(() {
           validate(
-              about.length == 0 || (about.length >= 10 && about.length <= 300));
+            _checkLength(text: trimmed, min: 10, max: 300, optional: true),
+          );
         });
       },
     );
@@ -111,5 +120,17 @@ mixin CommonFields on State {
       ),
       margin: EdgeInsets.only(top: 16),
     );
+  }
+
+  String _trim(String text) {
+    return text.replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
+  bool _checkLength({String text, int min, int max, bool optional = false}) {
+    final inRange = text.length >= min && text.length <= max;
+    if (optional) {
+      return inRange || text.isEmpty;
+    }
+    return inRange;
   }
 }

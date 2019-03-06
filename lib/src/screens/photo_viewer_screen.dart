@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:photo_view/photo_view.dart';
 import 'package:questionnaire/src/blocs/providers/questionnaire_provider.dart';
 import 'package:questionnaire/src/blocs/providers/user_provider.dart';
 import 'package:questionnaire/src/helper/cache.dart';
@@ -74,9 +73,11 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
       }
       backgroundColor = Colors.black;
       appBarColor = Colors.black;
-      photoView = PhotoView(
-        loadingChild: Center(child:CircularProgressIndicator()),
-        imageProvider: CachedNetworkImageProvider(url),
+      photoView = Container(
+        child: CachedNetworkImage(
+          imageUrl: url,
+          useOldImageOnUrlChange: true,          
+        ),
       );
     } else {
       switch (widget.userType) {
@@ -89,18 +90,14 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
       }
       backgroundColor = Colors.white;
       appBarColor = Colors.blue;
-      photoView = Center(
-        child: Text(
-          'No image yet.',
-        ),
-      );
+      photoView = Text('No image yet.');
     }
 
     final scaffoldKey = GlobalKey<ScaffoldState>();
     final appBarKey = GlobalKey();
 
     final body = GestureDetector(
-      child: photoView,
+      child: Center(child: photoView),
       onTap: () {
         appBarKey.currentState.setState(() {
           isAppBarVisible = !isAppBarVisible;
@@ -178,8 +175,9 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
             final success = await ImageDownloader.downloadImage(url);
             scaffoldKey.currentState.showSnackBar(
               SnackBar(
-                content: Text(
-                    (success != null) ? 'Image downloaded successfully.' : 'Failed.'),
+                content: Text((success != null)
+                    ? 'Image downloaded successfully.'
+                    : 'Failed.'),
               ),
             );
           },
@@ -236,19 +234,23 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
   }
 
   Future pickPhoto(ImageSource source) async {
-    final photo = await ImagePicker.pickImage(source: source);
+    final photo = await ImagePicker.pickImage(
+      source: source,
+      maxHeight: 500,
+      maxWidth: 500,
+    );
     if (photo == null) return;
 
     String photoUrl;
     if (widget.photoType == PhotoType.userAvatar) {
-      userBloc.pendingPhoto(widget.userType);
       final user = userBloc.lastUser(widget.userType);
+      userBloc.pendingPhoto(widget.userType);
       photoUrl = await uploadFile(photo, user.uid);
       user.photoUrl = photoUrl;
       userBloc.updateUser(widget.userType, user);
     } else {
-      questionnaireBloc.pendingPhoto();
       final questionnaire = questionnaireBloc.last;
+      questionnaireBloc.pendingPhoto();
       photoUrl = await uploadFile(photo, questionnaire.uid);
       questionnaire.photoUrl = photoUrl;
       questionnaireBloc.update(questionnaire);

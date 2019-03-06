@@ -6,9 +6,9 @@ import 'package:questionnaire/src/helper/routes.dart';
 import 'package:questionnaire/src/models/user.dart';
 import 'package:questionnaire/src/screens/photo_viewer_screen.dart';
 import 'package:intl/intl.dart';
-import '../mixins/circular_profile_photo_builder.dart';
+import '../mixins/circular_photo_builder.dart';
 
-class ProfileScreen extends StatelessWidget with CircularProfilePhotoBuilder {
+class ProfileScreen extends StatelessWidget with CircularPhotoBuilder {
   final UserType userType;
 
   ProfileScreen({Key key, this.userType}) : super(key: key);

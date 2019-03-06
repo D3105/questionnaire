@@ -73,9 +73,9 @@ class _ProfileEditScreenState extends BaseModalScreenState
 
   @override
   void onSavePressed() {
-    user.name = nameController.text;
+    user.name = getTrimmedText(nameController);
     user.role = role;
-    user.about = aboutController.text;
+    user.about = getTrimmedText(aboutController);
     bloc.updateUser(UserType.primary, user);
     Navigator.pop(context);
   }

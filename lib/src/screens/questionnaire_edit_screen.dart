@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:questionnaire/src/helper/focus.dart';
+import 'package:questionnaire/src/helper/image_picker.dart';
 import 'package:questionnaire/src/helper/position.dart';
 import 'package:questionnaire/src/screens/base/base_modal_screen_state.dart';
-import 'package:questionnaire/src/widgets/compressed_image.dart';
 import 'package:questionnaire/src/widgets/input_dialog.dart';
 import '../mixins/common_fields.dart';
 
@@ -22,7 +22,7 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
 
   final addImageButtonKey = GlobalKey();
 
-  Future<CompressedImage> futureImage;
+  Future<Image> futureImage;
 
   File previousImageFile;
   ImageSource previousImageSource;
@@ -143,8 +143,8 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
     }
   }
 
-  Future<CompressedImage> pickImage(ImageSource source) async {
-    var imageFile = await ImagePicker.pickImage(source: source);
+  Future<Image> pickImage(ImageSource source) async {
+    var imageFile = await pickImageFrom(source);
 
     if (imageFile != null) {
       disposeCameraImage();
@@ -154,10 +154,7 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
       imageFile = previousImageFile;
     }
 
-    return CompressedImage(
-      file: imageFile,
-      quality: 25,
-    );
+    return Image.file(imageFile);
   }
 
   Widget buildAddButton(void Function() onPressed,
@@ -176,7 +173,7 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
   }
 
   Widget buildImageView() {
-    return FutureBuilder<CompressedImage>(
+    return FutureBuilder<Image>(
       future: futureImage,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -514,8 +511,8 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
 
   @override
   void onSavePressed() {
-    final name = nameController.text;
-    final about = aboutController.text;
+    final name = getTrimmedText(nameController);
+    final about = getTrimmedText(aboutController);
     // final questions = questionPanelsData
     //     .map((panelData) => {panelData.title: panelData.alternatives}).toList().expand((list) => list).toList();
     Navigator.pop(context);

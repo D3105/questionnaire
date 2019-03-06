@@ -4,9 +4,9 @@ import 'package:questionnaire/src/helper/routes.dart';
 import 'package:questionnaire/src/screens/profile_screen.dart';
 import 'package:questionnaire/src/screens/questionnaire_list_screen.dart';
 import 'package:questionnaire/src/screens/users_list_screen.dart';
-import '../mixins/circular_profile_photo_builder.dart';
+import '../mixins/circular_photo_builder.dart';
 
-class CustomDrawer extends StatelessWidget with CircularProfilePhotoBuilder {
+class CustomDrawer extends StatelessWidget with CircularPhotoBuilder {
   @override
   Widget build(BuildContext context) {
     final bloc = UserProvider.of(context);

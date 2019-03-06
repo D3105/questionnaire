@@ -84,8 +84,8 @@ class _SignUpScreenState extends BaseAuthenticationScreenState {
 
   @override
   Future<FirebaseUser> authenticate() async {
-    final name = nameController.text;
-    final about = aboutController.text;
+    final name = getTrimmedText(nameController);
+    final about = getTrimmedText(aboutController);
     final email = emailController.text;
     final password = passwordController.text;
 

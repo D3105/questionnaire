@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/screens/questionnaire_edit_screen.dart';
 import 'package:questionnaire/src/widgets/custom_drawer.dart';
-import 'package:questionnaire/src/widgets/exif_transform.dart';
 
 class QuestionnaireListScreen extends StatelessWidget {
   @override
@@ -11,7 +10,7 @@ class QuestionnaireListScreen extends StatelessWidget {
         title: Text('Questionnaires'),
       ),
       body: Center(
-        child: ExifTransform(child:Image.asset('images/f1.jpg'), exifOrientation: 6,),
+        child: Text('dsgdfgfg'),
       ),
       drawer: CustomDrawer(),
       floatingActionButton: buildFab(context),

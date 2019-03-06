@@ -3,7 +3,7 @@ import 'package:questionnaire/src/models/user.dart';
 import 'package:questionnaire/src/widgets/profile_photo.dart';
 import 'package:rxdart/rxdart.dart';
 
-mixin CircularProfilePhotoBuilder {
+mixin CircularPhotoBuilder {
     Widget buildProfilePhoto(Observable<User> user) {
     return StreamBuilder<User>(
       stream: user,

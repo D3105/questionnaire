@@ -28,7 +28,7 @@ class UserBloc {
     return _subjects[type].value;
   }
 
-  pendingPhoto(UserType type) {
+  void pendingPhoto(UserType type) {
     _subjects[type].sink.addError('pending photo');
   }
 

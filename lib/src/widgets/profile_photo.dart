@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/models/user.dart';
-import 'package:questionnaire/src/widgets/compressed_image.dart';
 
 class ProfilePhoto extends StatelessWidget {
   final User user;
@@ -19,13 +18,14 @@ class ProfilePhoto extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation(Colors.yellow),
             ),
         imageBuilder: (context, imageProvider) {
-          return Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(radius)),
-            child: CompressedImage(
-              quality: 25,
-              imageProvider: imageProvider,
-            ),
-          );
+          if (radius != null) {
+            return CircleAvatar(
+              backgroundImage: imageProvider,
+              radius: radius,
+            );
+          }
+
+          return Image(image: imageProvider);
         },
       );
     }
