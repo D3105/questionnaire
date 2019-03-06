@@ -20,7 +20,7 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
   var questionPanelsData = <_PanelData>[];
   var resultPanelsData = <_PanelData>[];
 
-  final addImageButtonKey = GlobalKey();
+  final imageButtonKey = GlobalKey();
 
   Future<Image> futureImage;
 
@@ -75,10 +75,12 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
         alignment: AlignmentDirectional.center,
         children: <Widget>[
           Positioned(
-            child: buildAddButton(
-              onImageAddButtonPressed,
-              isImageButton: true,
-            ),
+            child: previousImageFile != null
+                ? buildEditButton(onImageAddButtonPressed)
+                : buildAddButton(
+                    onImageAddButtonPressed,
+                    isImageButton: true,
+                  ),
             right: 0,
           ),
           Text(
@@ -105,35 +107,71 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
   }
 
   void onImageAddButtonPressed() async {
-    final imageSource = await pickImageSource();
+    final imageAction = await pickPopupMenuAction(
+      [_PopupMenuAction.gallery, _PopupMenuAction.camera] +
+          (previousImageFile != null ? [_PopupMenuAction.delete] : []),
+    );
 
-    if (imageSource == null) return;
+    if (imageAction == null) return;
 
-    setState(() {
-      futureImage = pickImage(imageSource);
-    });
+    if (imageAction.imageSource == null) {
+      disposeCameraImage();
+      setState(() {
+        previousImageFile = null;
+      });
+      previousImageSource = null;
+      futureImage = Future.error('image deleted');
+    } else {
+      futureImage = pickImage(imageAction.imageSource);
+    }
   }
 
-  Future<ImageSource> pickImageSource() {
-    return showMenu<ImageSource>(
+  Future<_PopupMenuAction> pickPopupMenuAction(List<_PopupMenuAction> actions) {
+    var items = List<PopupMenuEntry<_PopupMenuAction>>();
+
+    for (final action in actions) {
+      switch (action) {
+        case _PopupMenuAction.camera:
+          items.add(
+            PopupMenuItem(
+              value: _PopupMenuAction.camera,
+              child: ListTile(
+                leading: Icon(Icons.photo_camera),
+                title: Text('Camera'),
+              ),
+            ),
+          );
+          break;
+        case _PopupMenuAction.gallery:
+          items.add(
+            PopupMenuItem(
+              value: _PopupMenuAction.gallery,
+              child: ListTile(
+                leading: Icon(Icons.photo_library),
+                title: Text('Gallery'),
+              ),
+            ),
+          );
+          break;
+        case _PopupMenuAction.delete:
+          items += <PopupMenuEntry<_PopupMenuAction>>[
+            PopupMenuDivider(),
+            PopupMenuItem(
+              value: _PopupMenuAction.delete,
+              child: ListTile(
+                leading: Icon(Icons.delete),
+                title: Text('Delete'),
+              ),
+            ),
+          ];
+          break;
+      }
+    }
+
+    return showMenu<_PopupMenuAction>(
       context: context,
-      position: getPosition(addImageButtonKey),
-      items: [
-        PopupMenuItem(
-          value: ImageSource.gallery,
-          child: ListTile(
-            leading: Icon(Icons.photo_library),
-            title: Text('Gallery'),
-          ),
-        ),
-        PopupMenuItem(
-          value: ImageSource.camera,
-          child: ListTile(
-            leading: Icon(Icons.photo_camera),
-            title: Text('Camera'),
-          ),
-        ),
-      ],
+      position: getPosition(imageButtonKey),
+      items: items,
     );
   }
 
@@ -148,8 +186,10 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
 
     if (imageFile != null) {
       disposeCameraImage();
-      previousImageFile = imageFile;
       previousImageSource = source;
+      setState(() {
+        previousImageFile = imageFile;
+      });
     } else {
       imageFile = previousImageFile;
     }
@@ -160,11 +200,25 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
   Widget buildAddButton(void Function() onPressed,
       {bool isImageButton = false}) {
     return RaisedButton.icon(
-      key: isImageButton ? addImageButtonKey : null,
+      key: isImageButton ? imageButtonKey : null,
       color: Colors.blue,
       textColor: Colors.white,
       icon: Icon(Icons.add),
       label: Text('Add'),
+      onPressed: () {
+        clearFocus(context);
+        onPressed();
+      },
+    );
+  }
+
+  Widget buildEditButton(void Function() onPressed) {
+    return RaisedButton.icon(
+      key: imageButtonKey,
+      color: Colors.blue,
+      textColor: Colors.white,
+      icon: Icon(Icons.edit),
+      label: Text('Edit'),
       onPressed: () {
         clearFocus(context);
         onPressed();
@@ -562,4 +616,14 @@ class _PanelType {
   final String name;
 
   const _PanelType._(this.name);
+}
+
+class _PopupMenuAction {
+  static const camera = _PopupMenuAction(ImageSource.camera);
+  static const gallery = _PopupMenuAction(ImageSource.gallery);
+  static const delete = _PopupMenuAction(null);
+
+  final ImageSource imageSource;
+
+  const _PopupMenuAction(this.imageSource);
 }
