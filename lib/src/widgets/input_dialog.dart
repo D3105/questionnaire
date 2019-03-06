@@ -43,6 +43,12 @@ Future<String> showInputDialog(
             ),
             actions: <Widget>[
               FlatButton(
+                child: Text('CANCEL'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              FlatButton(
                 child: Text(initialValue.isEmpty ? 'ADD' : 'SAVE'),
                 onPressed: isInputNotEmpty &&
                         isInputUnique &&
@@ -51,12 +57,6 @@ Future<String> showInputDialog(
                         Navigator.pop(context, controller.text);
                       }
                     : null,
-              ),
-              FlatButton(
-                child: Text('CANCEL'),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
               ),
             ],
           );
