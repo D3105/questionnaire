@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 abstract class BaseModalScreenState extends State {
-  void onSavePressed();
+  Future<void> onSavePressed();
   Widget buildBody();
   String get title;
   bool get isSaveEnabled;
+  var saving = false;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,7 @@ abstract class BaseModalScreenState extends State {
     );
   }
 
-  IconButton buildIconButton(BuildContext context, _Action action) {
+  Widget buildIconButton(BuildContext context, _Action action) {
     switch (action) {
       case _Action.close:
         return IconButton(
@@ -30,10 +31,29 @@ abstract class BaseModalScreenState extends State {
           },
         );
       case _Action.save:
-        return IconButton(
-          icon: Icon(Icons.save),
-          onPressed: isSaveEnabled ? onSavePressed : null,
-        );
+        return saving
+            ? Center(
+                child: Container(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                  ),
+                  height: 25,
+                  width: 25,
+                  margin: EdgeInsets.only(right: 8),
+                ),
+              )
+            : IconButton(
+                icon: Icon(Icons.save),
+                onPressed: isSaveEnabled
+                    ? () async {
+                        setState(() {
+                          saving = true;
+                        });
+                        await onSavePressed();
+                        Navigator.pop(context);
+                      }
+                    : null,
+              );
       default:
         throw Exception('_Action enum exausted.');
     }

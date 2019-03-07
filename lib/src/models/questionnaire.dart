@@ -5,6 +5,8 @@ class Questionnaire extends Entity {
   String name;
   String about;
   String photoUrl;
+  Map<String, List<String>> questions;
+  Map<String, Map<String, List<String>>> results;
   DateTime since;
   DocumentReference creator;
 

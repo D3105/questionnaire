@@ -72,12 +72,11 @@ class _ProfileEditScreenState extends BaseModalScreenState
   }
 
   @override
-  void onSavePressed() {
+  Future<void> onSavePressed() async {
     user.name = getTrimmedText(nameController);
     user.role = role;
     user.about = getTrimmedText(aboutController);
     bloc.updateUser(UserType.primary, user);
-    Navigator.pop(context);
   }
 
   @override

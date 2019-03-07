@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:questionnaire/src/blocs/providers/user_provider.dart';
+import 'package:questionnaire/src/helper/firebase.dart';
 import 'package:questionnaire/src/helper/focus.dart';
 import 'package:questionnaire/src/helper/image_picker.dart';
 import 'package:questionnaire/src/helper/position.dart';
@@ -564,12 +567,67 @@ class _QuestionnaireEditScreenState extends BaseModalScreenState
       );
 
   @override
-  void onSavePressed() {
+  Future<void> onSavePressed() async {
     final name = getTrimmedText(nameController);
     final about = getTrimmedText(aboutController);
-    // final questions = questionPanelsData
-    //     .map((panelData) => {panelData.title: panelData.alternatives}).toList().expand((list) => list).toList();
-    Navigator.pop(context);
+
+    final questions = questionPanelsData.fold<Map<String, List<_Alternative>>>(
+      {},
+      (acc, panelData) {
+        acc[panelData.title] = panelData.alternatives;
+        return acc;
+      },
+    );
+    final results =
+        resultPanelsData.fold<Map<String, Map<String, List<String>>>>(
+      {},
+      (acc, panelData) {
+        final selectedInQuestion = questions.map<String, List<String>>(
+          (name, alternatives) {
+            final selected = alternatives
+                .where(
+                  (alternative) {
+                    return alternative.selectedIn.contains(panelData);
+                  },
+                )
+                .map((alternative) => alternative.name)
+                .toList();
+
+            return MapEntry(name, selected);
+          },
+        );
+
+        acc[panelData.title] = selectedInQuestion;
+        return acc;
+      },
+    );
+    final mappedQuestions = questions.map(
+      (name, alternatives) {
+        final alternativeNames =
+            alternatives.map((alternative) => alternative.name).toList();
+        return MapEntry(name, alternativeNames);
+      },
+    );
+
+    final bloc = UserProvider.of(context);
+    final userUid = bloc.lastUser(UserType.primary).uid;
+    final userDocument = Firestore.instance.document('users/$userUid');
+
+    final questionnaireDocument =
+        await Firestore.instance.collection('questionnaires').add({
+      'name': name,
+      'about': about,
+      'questions': mappedQuestions,
+      'results': results,
+      'since': FieldValue.serverTimestamp(),
+      'creator': userDocument,
+    });
+
+    if (previousImageFile != null) {
+      final photoName = questionnaireDocument.documentID;
+      final photoUrl = await uploadFile(previousImageFile, photoName);
+      questionnaireDocument.updateData({'photoUrl': photoUrl});
+    }
   }
 
   @override
