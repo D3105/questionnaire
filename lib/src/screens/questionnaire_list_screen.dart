@@ -7,7 +7,21 @@ import 'package:questionnaire/src/models/questionnaire.dart';
 import 'package:questionnaire/src/screens/questionnaire_edit_screen.dart';
 import 'package:questionnaire/src/widgets/custom_drawer.dart';
 
-class QuestionnaireListScreen extends StatelessWidget {
+class QuestionnaireListScreen extends StatefulWidget {
+  @override
+  _QuestionnaireListScreenState createState() =>
+      _QuestionnaireListScreenState();
+}
+
+class _QuestionnaireListScreenState extends State<QuestionnaireListScreen> {
+  Stream<QuerySnapshot> questionnaires;
+
+  @override
+  void initState() {
+    super.initState();
+    questionnaires = Firestore.instance.collection('questionnaires').snapshots();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,7 +54,7 @@ class QuestionnaireListScreen extends StatelessWidget {
 
   Widget buildQuestionnaireList(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: Firestore.instance.collection('questionnaires').snapshots(),
+      stream: questionnaires,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(
