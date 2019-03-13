@@ -24,6 +24,7 @@ dependencies:
   cached_network_image: ^0.6.2
   share: ^0.6.0+1
   image_downloader: ^0.11.1
+  spider_chart: ^0.1.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
