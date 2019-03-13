@@ -5,6 +5,6 @@ import 'package:questionnaire/src/widgets/overall_quiz_result.dart';
 
 Future<void> main() async {
   await Firestore.instance.settings(timestampsInSnapshotsEnabled: true);
-  //runApp(App());
-  runApp(MaterialApp(home: OverallQuizResult()));
+  runApp(App());
+  //runApp(MaterialApp(home: OverallQuizResult()));
 }
