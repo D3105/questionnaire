@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:questionnaire/src/blocs/providers/questionnaire_provider.dart';
 import 'package:questionnaire/src/blocs/providers/user_provider.dart';
 import 'package:questionnaire/src/models/questionnaire.dart';
+import 'package:questionnaire/src/models/user.dart';
+import 'package:questionnaire/src/screens/questionnaire_detail_screen.dart';
 import 'package:questionnaire/src/screens/questionnaire_edit_screen.dart';
 import 'package:questionnaire/src/widgets/custom_drawer.dart';
 
@@ -19,7 +21,8 @@ class _QuestionnaireListScreenState extends State<QuestionnaireListScreen> {
   @override
   void initState() {
     super.initState();
-    questionnaires = Firestore.instance.collection('questionnaires').snapshots();
+    questionnaires =
+        Firestore.instance.collection('questionnaires').snapshots();
   }
 
   @override
@@ -97,17 +100,23 @@ class _QuestionnaireListScreenState extends State<QuestionnaireListScreen> {
     );
   }
 
-  void onQuestionnaireTap(BuildContext context, Questionnaire questionnaire) {
+  void onQuestionnaireTap(
+      BuildContext context, Questionnaire questionnaire) async {
     final questionnaireBloc = QuestionnaireProvider.of(context);
-    final userBloc = UserProvider.of(context);
     questionnaireBloc.update(questionnaire);
+    
+    final userBloc = UserProvider.of(context);
+    final creatorDocument = await questionnaire.creator.get();
+    final creator = User.fromMap(creatorDocument.data);
+    userBloc.updateUser(UserType.current, creator);
+    
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) {
           final isPrimaryUser = (questionnaire.creator.documentID ==
               userBloc.lastUser(UserType.primary).uid);
-          throw 'TODO';
+          return QuestionnaireDetailScreen(isPrimaryUser: isPrimaryUser);
         },
       ),
     );
