@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:questionnaire/src/models/quiz_overall_result.dart';
 import 'package:questionnaire/src/widgets/spider_chart.dart';
 
-class OverallQuizResult extends StatelessWidget {
+class OverallQuestionnaireResult extends StatelessWidget {
   Firestore db;
 
   Questionnaire q;
