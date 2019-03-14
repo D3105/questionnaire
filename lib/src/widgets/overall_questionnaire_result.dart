@@ -14,19 +14,19 @@ class OverallQuestionnaireResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final questionnaireBloc = QuestionnaireProvider.of(context);
-    q = questionnaireBloc.last;
-    quiz_id = q.uid;
+    // final questionnaireBloc = QuestionnaireProvider.of(context);
+    // final q = questionnaireBloc.last;
     return new StreamBuilder(
       stream: Firestore.instance
           .collection('quiz_results_overall')
-          .document(quiz_id)
+          .document('test')
           .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return new Text('Loading');
         }
-        QuizOverallResultObject qObj = snapshot.data;
+        return Container();
+        // QuizOverallResult qObj = snapshot.data;
       },
     );
 

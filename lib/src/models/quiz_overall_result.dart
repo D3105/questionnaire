@@ -1,22 +1,24 @@
-class QuizOverallResultObject {
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class QuizOverallResult {
   int numberPassed;
-  int quizId;
+  DocumentReference quizDocument;
   Map<String, Map<String, int>> alternativeData;
 
-  QuizOverallResultObject(this.numberPassed, this.quizId, this.alternativeData);
+  QuizOverallResult(this.numberPassed, this.quizDocument, this.alternativeData);
 
   Map<String, dynamic> toMap() {
     var map = new Map<String, dynamic>();
-    if (quizId != null) {
-      map['quizId'] = quizId;
+    if (quizDocument != null) {
+      map['quizId'] = quizDocument;
     }
     map['numberPassed'] = numberPassed;
     map['alternativeData'] = alternativeData;
   }
 
-  QuizOverallResultObject.fromMap(Map<String, dynamic> map) {
+  QuizOverallResult.fromMap(Map<String, dynamic> map) {
     this.numberPassed = map['numberPassed'];
-    this.quizId = map['quizId'];
+    this.quizDocument = map['quizId'];
     this.alternativeData = map['alternativeData'];
   }
 }
