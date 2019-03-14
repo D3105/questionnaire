@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:questionnaire/src/helper/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:questionnaire/src/widgets/overall_questionnaire_result.dart';
 
 class Choice {
   const Choice({this.title});
@@ -13,7 +14,8 @@ const List<Choice> choices = const <Choice>[
   const Choice(title: 'Personal'),
 ];
 
-class QuizResultScreen extends StatelessWidget {
+class QuestionnaireResultScreen extends StatelessWidget {
+  DocumentReference quizDocument;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,7 +38,10 @@ class QuizResultScreen extends StatelessWidget {
       body: DefaultTabController(
         length: 2,
         child: TabBarView(
-          children: <Widget>[],
+          children: <Widget>[
+            //Add widgets to personal and overall results
+            OverallQuestionnaireResult(),
+          ],
         ),
       ),
     );
@@ -61,6 +66,8 @@ class QuizResultScreen extends StatelessWidget {
 
   //To-do: set link to quiz
   Widget buildToQuizButton(BuildContext context) {
+    //get quiz uid
+    //navigate to quiz using uid
     return IconButton(
       icon: Icon(Icons.view_list),
       onPressed: () {

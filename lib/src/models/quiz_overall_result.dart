@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:questionnaire/src/models/entity.dart';
 
-class QuizOverallResult {
+class QuestionnaireOverallResult extends Entity {
   int numberPassed;
   DocumentReference quizDocument;
-  Map<String, Map<String, int>> alternativeData;
+  Map<String, int> alternativeData;
 
-  QuizOverallResult(this.numberPassed, this.quizDocument, this.alternativeData);
+  QuestionnaireOverallResult(this.numberPassed, this.quizDocument, this.alternativeData);
 
   Map<String, dynamic> toMap() {
     var map = new Map<String, dynamic>();
@@ -14,9 +15,10 @@ class QuizOverallResult {
     }
     map['numberPassed'] = numberPassed;
     map['alternativeData'] = alternativeData;
+    return map;
   }
 
-  QuizOverallResult.fromMap(Map<String, dynamic> map) {
+  QuestionnaireOverallResult.fromMap(Map<String, dynamic> map) {
     this.numberPassed = map['numberPassed'];
     this.quizDocument = map['quizId'];
     this.alternativeData = map['alternativeData'];

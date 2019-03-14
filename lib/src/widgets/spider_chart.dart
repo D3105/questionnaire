@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'dart:math' show pi, cos, sin;
 
 class SpiderChart extends StatelessWidget {
-  final List<double> data;
+  final List<int> data;
   final List<String> names;
-  final double maxValue;
+  final int maxValue;
   final List<Color> colors;
   final decimalPrecision;
   final Size size;
@@ -22,7 +22,7 @@ class SpiderChart extends StatelessWidget {
     this.size = Size.infinite,
     this.decimalPrecision = 0,
     this.fallbackHeight = 200,
-    this.fallbackWidth = 200,    
+    this.fallbackWidth = 200,
   }) : super(key: key);
 
   @override
@@ -32,15 +32,16 @@ class SpiderChart extends StatelessWidget {
       maxHeight: fallbackHeight,
       child: CustomPaint(
         size: size,
-        painter: SpiderChartPainter(data, maxValue, colors, decimalPrecision,names),
+        painter:
+            SpiderChartPainter(data, maxValue, colors, decimalPrecision, names),
       ),
     );
   }
 }
 
 class SpiderChartPainter extends CustomPainter {
-  final List<double> data;
-  final double maxNumber;
+  final List<int> data;
+  final int maxNumber;
   final List<Color> colors;
   final decimalPrecision;
   final List<String> names;
@@ -55,8 +56,8 @@ class SpiderChartPainter extends CustomPainter {
     ..color = Color.fromARGB(255, 50, 50, 50)
     ..style = PaintingStyle.stroke;
 
-  SpiderChartPainter(
-      this.data, this.maxNumber, this.colors, this.decimalPrecision, this.names);
+  SpiderChartPainter(this.data, this.maxNumber, this.colors,
+      this.decimalPrecision, this.names);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -77,7 +78,7 @@ class SpiderChartPainter extends CustomPainter {
     paintGraphOutline(canvas, center, angle);
     paintDataLines(canvas, points);
     paintDataPoints(canvas, points);
-    paintText(canvas, center, points, data);    
+    paintText(canvas, center, points, data);
   }
 
   void paintDataLines(Canvas canvas, List<Offset> points) {
@@ -135,7 +136,7 @@ class SpiderChartPainter extends CustomPainter {
     outline.add(outline[0]);
 
     canvas.drawPoints(PointMode.polygon, outline, spokes);
-    paintText(canvas,center,outline,names);
+    paintText(canvas, center, outline, names);
     canvas.drawCircle(center, 2, spokes);
   }
 
