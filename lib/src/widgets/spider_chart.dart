@@ -19,7 +19,7 @@ class SpiderChart extends StatelessWidget {
     @required this.colors,
     @required this.maxValue,
     @required this.names,
-    this.size = Size.infinite,
+    @required this.size,
     this.decimalPrecision = 0,
     this.fallbackHeight = 200,
     this.fallbackWidth = 200,
@@ -74,7 +74,7 @@ class SpiderChartPainter extends CustomPainter {
 
       points.add(Offset(x, y) + center);
     }
-
+    points.add(points[0]);
     paintGraphOutline(canvas, center, angle);
     paintDataLines(canvas, points);
     paintDataPoints(canvas, points);
@@ -93,7 +93,7 @@ class SpiderChartPainter extends CustomPainter {
   }
 
   void paintDataPoints(Canvas canvas, List<Offset> points) {
-    for (var i = 0; i < points.length; i++) {
+    for (var i = 0; i < points.length-1; i++) {
       canvas.drawCircle(points[i], 4.0, Paint()..color = colors[i]);
     }
   }
@@ -101,8 +101,9 @@ class SpiderChartPainter extends CustomPainter {
   void paintText(
       Canvas canvas, Offset center, List<Offset> points, List<Object> data) {
     var textPainter = TextPainter(textDirection: TextDirection.ltr);
-    for (var i = 0; i < points.length; i++) {
+    for (var i = 0; i < points.length-1; i++) {
       //String s = data[i].toStringAsFixed(decimalPrecision);
+      print(data[i].toString());
       String s = data[i].toString();
       textPainter.text =
           TextSpan(text: s, style: TextStyle(color: Colors.black));
